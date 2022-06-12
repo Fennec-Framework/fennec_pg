@@ -81,7 +81,7 @@ class BelongsTo extends Relationship {
 
 const BelongsTo belongsTo = BelongsTo();
 
-class ManyToMany extends Relationship {
+/*class ManyToMany extends Relationship {
   final Type through;
   const ManyToMany(
     this.through, {
@@ -99,4 +99,4 @@ class ManyToMany extends Relationship {
             cascadeOnDelete: cascadeOnDelete == true,
             joinType: joinType,
             loadType: loadType);
-}
+}*/

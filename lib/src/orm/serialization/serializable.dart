@@ -1,7 +1,6 @@
 import 'dart:mirrors';
 
-import '../migrations.dart';
-import '../relations.dart';
+import '../../../fennec_pg.dart';
 
 abstract class Serializable {
   Map<String, dynamic> serializeModel() {
