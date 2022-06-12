@@ -9,7 +9,7 @@ class Table {
 class Column {
   final bool isNullable;
   final int? length;
-  final bool unique;
+
   final ColumnType? type;
   final IndexType indexType;
   final String? alias;
@@ -18,7 +18,6 @@ class Column {
 
   const Column(
       {this.isNullable = true,
-      this.unique = false,
       this.length,
       this.type,
       this.indexType = IndexType.none,
