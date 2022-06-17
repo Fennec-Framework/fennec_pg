@@ -1,7 +1,7 @@
 name: fennec_pg
-description: A simple command-line application.
-version: 1.0.0
-# homepage: https://www.example.com
+description: a dart plugin to connect with postgres included orm.
+version: 0.0.1
+homepage: https://github.com/Fennec-Framework/fennec_pg
 
 environment:
   sdk: ">=2.16.2 <3.0.0"
