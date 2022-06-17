@@ -1,10 +1,9 @@
 import 'package:fennec_pg/src/core/fennec_pg.dart';
 
 class PGConnectionAdapter {
-  final String uri;
-  PGConnectionAdapter(this.uri);
+  PGConnectionAdapter();
   static late Connection connection;
-  Future init() async {
+  static Future init(final String uri) async {
     connection = await connect(uri);
   }
 }

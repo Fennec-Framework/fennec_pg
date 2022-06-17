@@ -2,7 +2,6 @@ library fennec_pg;
 
 export 'src/orm/serialization/serializable.dart';
 export 'src/orm/repository/repository.dart';
-
 export 'src/orm/annotations/annotations.dart';
 export 'src/orm/filter/filter_builder.dart';
 export 'src/orm/filter/join_output.dart';

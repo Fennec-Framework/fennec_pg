@@ -47,7 +47,6 @@ class ConnectionImpl implements Connection {
   final String? _timeZone;
   final TypeConverter _typeConverter;
 
-  /// The owner of the connection, or null if not available.
   ConnectionOwner? owner;
   final Socket _socket;
   final Buffer _buffer;
@@ -57,7 +56,7 @@ class ConnectionImpl implements Connection {
   Query? _query;
   int? _msgType;
   int? _msgLength;
-  //int _secretKey;
+
   int _transactionLevel = 0;
 
   int? _backendPid;
@@ -314,13 +313,12 @@ class ConnectionImpl implements Connection {
 
       _buffer.append(data);
 
-      // Handle resuming after storing message type and length.
       final msgType = _msgType;
       if (msgType != null) {
         final msgLength = _msgLength!;
         if (msgLength > _buffer.bytesAvailable) {
           return;
-        } // Wait for entire message to be in buffer.
+        }
 
         _readMessage(msgType, msgLength);
 
@@ -328,7 +326,6 @@ class ConnectionImpl implements Connection {
         _msgLength = null;
       }
 
-      // Main message loop.
       while (_state != ConnectionState.closed) {
         if (_buffer.bytesAvailable < 5) return;
         int msgType = _buffer.readByte();
@@ -359,9 +356,6 @@ class ConnectionImpl implements Connection {
       if (msgType == msgErrorResponse && msgLength > 30000) return false;
     } else {
       if (msgLength < 4) return false;
-
-      // These are the only messages from the server which may exceed 30,000
-      // bytes.
       if (msgLength > 30000 &&
           (msgType != msgNoticeResponse &&
               msgType != msgErrorResponse &&
@@ -486,10 +480,6 @@ class ConnectionImpl implements Connection {
     }
 
     _parameters[name] = value;
-
-    // Cache this value so that it doesn't need to be looked up from the map.
-    //if (name == 'TimeZone') _isUtcTimeZone = value == 'UTC';
-
     if (name == 'client_encoding' && value != 'UTF8') {
       warn('client_encoding parameter must remain as UTF8 for correct string '
           'handling. client_encoding is: "$value".');
@@ -497,13 +487,13 @@ class ConnectionImpl implements Connection {
   }
 
   @override
-  Stream<ARow> query(String sql, [values]) {
+  Stream<Row> query(String sql, [values]) {
     try {
       if (values != null) sql = substitute(sql, values, _typeConverter.encode);
       var query = _enqueueQuery(sql);
-      return query.stream as Stream<ARow>;
+      return query.stream as Stream<Row>;
     } catch (ex, st) {
-      return new Stream.fromFuture(new Future.error(ex, st));
+      return Stream.fromFuture(Future.error(ex, st));
     }
   }
 
@@ -517,7 +507,7 @@ class ConnectionImpl implements Connection {
   }
 
   @override
-  Future<T> runInTransaction<T>(Future<T> operation(),
+  Future<T> runInTransaction<T>(Future<T> Function() operation,
       [Isolation isolation = Isolation.readCommitted]) async {
     String begin;
     String commit;
@@ -665,7 +655,6 @@ class ConnectionImpl implements Connection {
       rowData[index] = value;
     }
 
-    // If last column, then return the row.
     if (index == query.columnCount! - 1) query.addRow();
   }
 
@@ -683,10 +672,8 @@ class ConnectionImpl implements Connection {
   @override
   void close() {
     if (_state == ConnectionState.closed) return;
-
     _state = ConnectionState.closed;
 
-    // If a query is in progress then send an error and close the result stream.
     final query = _query;
     if (query != null) {
       var c = query.controller;
@@ -706,7 +693,6 @@ class ConnectionImpl implements Connection {
       msg.setLength();
       _socket.add(msg.buffer);
       _socket.flush().whenComplete(_destroy);
-      // Wait for socket flush to succeed or fail before closing the connection.
     } catch (e, st) {
       _messages.add(ClientMessageImpl(
           severity: 'WARNING',

@@ -17,7 +17,7 @@ Future<Connection> connect(String uri,
         debugName: debugName);
 
 abstract class Connection {
-  Stream<ARow> query(String sql, [values]);
+  Stream<IRow> query(String sql, [values]);
   Future<int> execute(String sql, [values]);
   Future<T> runInTransaction<T>(Future<T> Function() operation,
       [Isolation isolation]);
@@ -29,14 +29,14 @@ abstract class Connection {
   TransactionState get transactionState;
 }
 
-abstract class ARow {
+abstract class IRow {
   operator [](int i);
   List toList();
   Map toMap();
-  List<AColumn> getColumns();
+  List<IColumn> getColumns();
 }
 
-abstract class AColumn {
+abstract class IColumn {
   int get index;
   String get name;
   int get fieldId;

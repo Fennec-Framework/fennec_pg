@@ -1,12 +1,7 @@
-// ignore_for_file: unnecessary_string_escapes
-
-import 'dart:convert';
-import 'dart:math';
 import 'dart:mirrors';
 
 import 'package:fennec_pg/fennec_pg.dart';
-import 'package:fennec_pg/src/orm/filter/filter_builder.dart';
-import 'package:fennec_pg/src/orm/filter/select_builder.dart';
+
 import 'package:fennec_pg/src/orm/repository/repository_util.dart';
 
 import 'irepository.dart';
@@ -21,7 +16,7 @@ abstract class Repository<T, S> implements IRepository<T, S> {
 
     for (var element in methods) {
       if (element.value is MethodMirror &&
-          element.key.toString() == 'Symbol("$tablename.fromJson")') {
+          element.key.toString().contains("fromJson")) {
         existConverter = true;
         break;
       }
@@ -42,10 +37,13 @@ abstract class Repository<T, S> implements IRepository<T, S> {
     String join = 'with cte as ( select ' "$tablename" '.*';
     for (var variableMirror in cm.declarations.values) {
       if (variableMirror is VariableMirror) {
-        String joinTableName = variableMirror.type.reflectedType.toString();
         String columnName = MirrorSystem.getName(variableMirror.simpleName);
         for (var element in variableMirror.metadata) {
           if (element.reflectee is HasOne) {
+            ClassMirror joinableTableInstance =
+                reflectClass(variableMirror.type.reflectedType);
+            String joinTableName =
+                RepositoryUtils.getTableName(joinableTableInstance);
             InstanceMirror cm = reflect(element.reflectee);
             String localKey =
                 cm.getField(#localKey).reflectee ?? "${tablename}_id";
@@ -53,9 +51,9 @@ abstract class Repository<T, S> implements IRepository<T, S> {
             String foreignKey = cm.getField(#foreignKey).reflectee ?? "id";
             JoinType joinType =
                 cm.getField(#joinType).reflectee ?? JoinType.left;
-            LoadType loadType =
-                cm.getField(#loadType).reflectee ?? LoadType.exclude;
-            if (loadType == LoadType.include) {
+            FetchType loadType =
+                cm.getField(#fetchType).reflectee ?? FetchType.exclude;
+            if (loadType == FetchType.include) {
               String randomName = '"${RepositoryUtils.getRandString(5)}"';
               if (join.contains('JOIN') && join.contains('from')) {
                 List<String> splitBefore = join.split('from');
@@ -72,20 +70,24 @@ abstract class Repository<T, S> implements IRepository<T, S> {
               }
             }
           } else if (element.reflectee is HasMany) {
+            ClassMirror joinableTableInstance =
+                reflectClass(variableMirror.type.reflectedType);
+            String joinTableName =
+                RepositoryUtils.getTableName(joinableTableInstance);
             ClassMirror classMirror = reflectClass(
                 variableMirror.type.typeArguments.first.reflectedType);
             joinTableName = RepositoryUtils.getTableName(classMirror);
 
             InstanceMirror cm = reflect(element.reflectee);
             String localKey =
-                cm.getField(#localKey).reflectee ?? "${tablename}_id";
+                cm.getField(#fetchType).reflectee ?? "${tablename}_id";
 
             String foreignKey = cm.getField(#foreignKey).reflectee ?? "id";
             JoinType joinType =
                 cm.getField(#joinType).reflectee ?? JoinType.left;
-            LoadType loadType =
-                cm.getField(#loadType).reflectee ?? LoadType.exclude;
-            if (loadType == LoadType.include) {
+            FetchType loadType =
+                cm.getField(#loadType).reflectee ?? FetchType.exclude;
+            if (loadType == FetchType.include) {
               String randomName = '"${RepositoryUtils.getRandString(5)}"';
               if (join.contains('JOIN') && join.contains('from')) {
                 List<String> splitBefore = join.split('from');
@@ -102,6 +104,12 @@ abstract class Repository<T, S> implements IRepository<T, S> {
               }
             }
           } else if (element.reflectee is BelongsTo) {
+            ClassMirror joinableTableInstance =
+                reflectClass(variableMirror.type.reflectedType);
+
+            String joinTableName =
+                RepositoryUtils.getTableName(joinableTableInstance);
+
             InstanceMirror cm = reflect(element.reflectee);
             String localKey = cm.getField(#localKey).reflectee ?? "id";
 
@@ -110,9 +118,9 @@ abstract class Repository<T, S> implements IRepository<T, S> {
 
             JoinType joinType =
                 cm.getField(#joinType).reflectee ?? JoinType.left;
-            LoadType loadType =
-                cm.getField(#loadType).reflectee ?? LoadType.exclude;
-            if (loadType == LoadType.include) {
+            FetchType loadType =
+                cm.getField(#fetchType).reflectee ?? FetchType.exclude;
+            if (loadType == FetchType.include) {
               String randomName = '"${RepositoryUtils.getRandString(5)}"';
               if (join.contains('JOIN') && join.contains('from')) {
                 List<String> splitBefore = join.split('from');
@@ -157,21 +165,24 @@ abstract class Repository<T, S> implements IRepository<T, S> {
     String tablename = RepositoryUtils.getTableName(cm);
     String primaryKey = RepositoryUtils.getPrimaryKey(cm);
     String join = "with cte as ( select $tablename.*";
-    for (var varaiableMirror in cm.declarations.values) {
-      String columnName = MirrorSystem.getName(varaiableMirror.simpleName);
-      if (varaiableMirror is VariableMirror) {
-        String joinTableName = varaiableMirror.type.reflectedType.toString();
-        for (var element in varaiableMirror.metadata) {
+    for (var variableMirror in cm.declarations.values) {
+      String columnName = MirrorSystem.getName(variableMirror.simpleName);
+      if (variableMirror is VariableMirror) {
+        for (var element in variableMirror.metadata) {
           if (element.reflectee is HasOne) {
+            ClassMirror joinableTableInstance =
+                reflectClass(variableMirror.type.reflectedType);
+            String joinTableName =
+                RepositoryUtils.getTableName(joinableTableInstance);
             InstanceMirror cm = reflect(element.reflectee);
             String localKey =
                 cm.getField(#localKey).reflectee ?? "${tablename}_id";
             String foreignKey = cm.getField(#foreignKey).reflectee ?? "id";
             JoinType joinType =
                 cm.getField(#joinType).reflectee ?? JoinType.full;
-            LoadType loadType =
-                cm.getField(#loadType).reflectee ?? LoadType.exclude;
-            if (loadType == LoadType.include) {
+            FetchType loadType =
+                cm.getField(#fetchType).reflectee ?? FetchType.exclude;
+            if (loadType == FetchType.include) {
               String randomName = '"${RepositoryUtils.getRandString(5)}"';
               if (join.contains('JOIN') && join.contains('from')) {
                 List<String> splitBefore = join.split('from');
@@ -189,8 +200,12 @@ abstract class Repository<T, S> implements IRepository<T, S> {
               }
             }
           } else if (element.reflectee is HasMany) {
+            ClassMirror joinableTableInstance =
+                reflectClass(variableMirror.type.reflectedType);
+            String joinTableName =
+                RepositoryUtils.getTableName(joinableTableInstance);
             ClassMirror classMirror = reflectClass(
-                varaiableMirror.type.typeArguments.first.reflectedType);
+                variableMirror.type.typeArguments.first.reflectedType);
             joinTableName = RepositoryUtils.getTableName(classMirror);
 
             InstanceMirror cm = reflect(element.reflectee);
@@ -200,9 +215,9 @@ abstract class Repository<T, S> implements IRepository<T, S> {
             String foreignKey = cm.getField(#foreignKey).reflectee ?? "id";
             JoinType joinType =
                 cm.getField(#joinType).reflectee ?? JoinType.left;
-            LoadType loadType =
-                cm.getField(#loadType).reflectee ?? LoadType.exclude;
-            if (loadType == LoadType.include) {
+            FetchType loadType =
+                cm.getField(#fetchType).reflectee ?? FetchType.exclude;
+            if (loadType == FetchType.include) {
               String randomName = '"${RepositoryUtils.getRandString(5)}"';
               if (join.contains('JOIN') && join.contains('from')) {
                 List<String> splitBefore = join.split('from');
@@ -219,15 +234,19 @@ abstract class Repository<T, S> implements IRepository<T, S> {
               }
             }
           } else if (element.reflectee is BelongsTo) {
+            ClassMirror joinableTableInstance =
+                reflectClass(variableMirror.type.reflectedType);
+            String joinTableName =
+                RepositoryUtils.getTableName(joinableTableInstance);
             InstanceMirror cm = reflect(element.reflectee);
             String localKey = cm.getField(#localKey).reflectee ?? "id";
             String foreignKey =
                 cm.getField(#foreignKey).reflectee ?? "${tablename}_id";
             JoinType joinType =
                 cm.getField(#joinType).reflectee ?? JoinType.left;
-            LoadType loadType =
-                cm.getField(#loadType).reflectee ?? LoadType.exclude;
-            if (loadType == LoadType.include) {
+            FetchType loadType =
+                cm.getField(#fetchType).reflectee ?? FetchType.exclude;
+            if (loadType == FetchType.include) {
               String randomName = '"${RepositoryUtils.getRandString(5)}"';
               if (join.contains('JOIN') && join.contains('from')) {
                 List<String> splitBefore = join.split('from');
@@ -481,11 +500,6 @@ abstract class Repository<T, S> implements IRepository<T, S> {
     return null;
   }
 
-  ///[insertAll] is implemented for inserting many objects at same time
-  ///
-  ///
-  ///
-  ///@ove
   @override
   Future<List<T?>> insertAll(List<T> objects) async {
     List<T?> result = [];

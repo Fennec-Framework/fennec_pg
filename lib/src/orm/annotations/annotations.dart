@@ -2,20 +2,17 @@ import '../../../fennec_pg.dart';
 
 class Table {
   final String name;
-
   const Table(this.name);
 }
 
 class Column {
   final bool isNullable;
   final int? length;
-
   final ColumnType? type;
   final IndexType indexType;
   final String? alias;
   final Type? serializableTo;
   final bool serializable;
-
   const Column(
       {this.isNullable = true,
       this.length,
@@ -25,7 +22,6 @@ class Column {
       this.serializableTo,
       this.serializable = true});
 
-  /// Returns `true` if [expression] is not `null`.
   bool get hasAlias => alias != null;
 }
 
@@ -39,7 +35,7 @@ class PrimaryKey extends Column {
         );
 }
 
-const Column primaryKey = PrimaryKey();
+const PrimaryKey primaryKey = PrimaryKey();
 
 class Variable {
   String value;

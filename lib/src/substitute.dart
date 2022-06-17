@@ -2,21 +2,21 @@ import 'dart:collection';
 
 import 'ascii.dart';
 
-const int _TOKEN_TEXT = 1;
-const int _TOKEN_IDENT = 3;
+const int tokenText = 1;
+const int tokenIdent = 3;
 
-class _Token {
-  _Token(this.type, this.value, [this.typeName]);
+class Token {
   final int type;
   final String value;
   final String? typeName;
-
+  Token(this.type, this.value, [this.typeName]);
   @override
   String toString() =>
       '${['?', 'Text', 'At', 'Ident'][type]} "$value" "$typeName"';
 }
 
-typedef String _ValueEncoder(String identifier, String? type);
+typedef _ValueEncoder = String Function(String identifier, String? type);
+typedef EncodeValue = String Function(dynamic value, String? type);
 
 bool isIdentifier(int charCode) =>
     (charCode >= $a && charCode <= $z) ||
@@ -38,8 +38,7 @@ class ParseException {
       : '$message At character: $index, in source "$source"';
 }
 
-String substitute(
-    String source, values, String encodeValue(value, String? type)) {
+String substitute(String source, values, EncodeValue encodeValue) {
   _ValueEncoder valueEncoder;
   if (values is List) {
     valueEncoder = _createListValueEncoder(values, encodeValue);
@@ -51,11 +50,11 @@ String substitute(
     throw ArgumentError('Unexpected type.');
   }
 
-  final buf = StringBuffer(), s = _Scanner(source), cache = HashMap();
+  final buf = StringBuffer(), s = Scanner(source), cache = HashMap();
 
   while (s.hasMore()) {
     var t = s.read()!;
-    if (t.type == _TOKEN_IDENT) {
+    if (t.type == tokenIdent) {
       final id = t.value, typeName = t.typeName, key = Pair(id, typeName);
       buf.write(cache[key] ?? (cache[key] = valueEncoder(id, typeName)));
     } else {
@@ -69,8 +68,7 @@ String substitute(
 String _nullValueEncoder(value, String? type) => throw ParseException(
     'Template contains a parameter, but no values were passed.');
 
-_ValueEncoder _createListValueEncoder(
-        List list, String encodeValue(value, String? type)) =>
+_ValueEncoder _createListValueEncoder(List list, EncodeValue encodeValue) =>
     (String identifier, String? type) {
       int i = int.tryParse(identifier) ??
           (throw ParseException('Expected integer parameter.'));
@@ -82,8 +80,7 @@ _ValueEncoder _createListValueEncoder(
       return encodeValue(list[i], type);
     };
 
-_ValueEncoder _createMapValueEncoder(
-        Map map, String encodeValue(value, String? type)) =>
+_ValueEncoder _createMapValueEncoder(Map map, EncodeValue encodeValue) =>
     (String identifier, String? type) {
       final val = map[identifier];
       if (val == null && !map.containsKey(identifier)) {
@@ -93,57 +90,49 @@ _ValueEncoder _createMapValueEncoder(
       return encodeValue(val, type);
     };
 
-class _Scanner {
-  _Scanner(String source)
-      : //_source = source,
-        _r = _CharReader(source) {
+class Scanner {
+  Scanner(String source) : _r = _CharReader(source) {
     if (_r.hasMore()) _t = _read();
   }
 
-  //final String _source;
   final _CharReader _r;
-  _Token? _t;
+  Token? _t;
 
   bool hasMore() => _t != null;
 
-  _Token? peek() => _t;
+  Token? peek() => _t;
 
-  _Token? read() {
+  Token? read() {
     var t = _t;
     _t = _r.hasMore() ? _read() : null;
     return t;
   }
 
-  _Token _read() {
+  Token _read() {
     assert(_r.hasMore());
 
-    // '@@', '@ident', or '@ident:type'
     if (_r.peek() == $at) {
       _r.read();
 
       if (!_r.hasMore()) throw ParseException('Unexpected end of input.');
 
-      // '@@' or '@>' operator and '<@ '
       if (!isIdentifier(_r.peek())) {
         final s = String.fromCharCode(_r.read());
-        return _Token(_TOKEN_TEXT, '@$s');
+        return Token(tokenText, '@$s');
       }
 
-      // Identifier
       var ident = _r.readWhile(isIdentifier);
 
-      // Optional type modifier
-      var type;
+      String? type;
       if (_r.peek() == $colon) {
         _r.read();
         type = _r.readWhile(isIdentifier);
       }
-      return _Token(_TOKEN_IDENT, ident, type);
+      return Token(tokenIdent, ident, type);
     }
 
-    // Read plain text
     var text = _readText();
-    return _Token(_TOKEN_TEXT, text);
+    return Token(tokenText, text);
   }
 
   String _readText() {
@@ -158,18 +147,17 @@ class _Scanner {
       } else if (esc == null) {
         switch (c) {
           case $at:
-            return false; //found!
+            return false;
           case $single_quote:
           case $quot:
           case $dollar:
             esc = c;
-            if (c == $dollar) ndollar = 3; //$tag$string$tag$
+            if (c == $dollar) ndollar = 3;
             break;
         }
       } else if (c == esc) {
         if (c != $dollar || --ndollar == 0) esc = null;
       }
-
       return true;
     });
   }
@@ -193,13 +181,10 @@ class _CharReader {
     if (!hasMore()) {
       throw ParseException('Unexpected end of input.', _source, _i);
     }
-
     int start = _i;
-
     while (hasMore() && test(peek())) {
       read();
     }
-
     return String.fromCharCodes(_codes.sublist(start, _i));
   }
 }

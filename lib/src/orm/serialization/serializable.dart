@@ -129,8 +129,8 @@ abstract class Serializable {
             }
           } else if (meta.reflectee is Relationship) {
             InstanceMirror cm = reflect(meta.reflectee);
-            LoadType loadType = cm.getField(#loadType).reflectee;
-            if (loadType == LoadType.include) {
+            FetchType loadType = cm.getField(#fetchType).reflectee;
+            if (loadType == FetchType.include) {
               var key = MirrorSystem.getName(dm.simpleName);
 
               if (im.getField(dm.simpleName).reflectee != null) {

@@ -74,7 +74,6 @@ class RepositoryUtils {
 
       query += '\n);';
       query += query1;
-      // print(query);
     }
     return query;
   }
@@ -181,12 +180,17 @@ class RepositoryUtils {
         });
 
         InstanceMirror cm = reflect(meta.reflectee);
-        String localKey = cm.getField(#localKey).reflectee ?? "${tablename}_id";
+        String localKey =
+            cm.getField(#localKey).reflectee ?? "${referenceeTableName}_id";
         String foreignKey = cm.getField(#foreignKey).reflectee ?? "id";
+        CascadeType? cascadeType = cm.getField(#cascadeType).reflectee;
         columnRelations += ',\n';
         columnRelations += '"$localKey"' ' ' +
             primaryKeyType +
             ' UNIQUE REFERENCES  "$referenceeTableName" ("$foreignKey")';
+        if (cascadeType != null) {
+          columnRelations += ' ON ${cascadeType.name} CASCADE';
+        }
         columnRelations += '\n);';
         columnRelations +=
             'ALTER TABLE "$tablename" ADD COLUMN IF NOT EXISTS "$localKey" $primaryKeyType UNIQUE REFERENCES "$referenceeTableName" ("$foreignKey");';
@@ -211,14 +215,19 @@ class RepositoryUtils {
           }
         });
         InstanceMirror cm = reflect(meta.reflectee);
-        String localKey = cm.getField(#localKey).reflectee ?? "${tablename}_id";
+        String localKey =
+            cm.getField(#localKey).reflectee ?? "${referenceeTableName}_id";
         String foreignKey = cm.getField(#foreignKey).reflectee ?? "id";
+        CascadeType? cascadeType = cm.getField(#cascadeType).reflectee;
         columnRelations += ',\n';
         columnRelations += '"$localKey"'
                 ' ' +
             primaryKeyType +
             ' ' +
             'REFERENCES  "$referenceeTableName" ("$foreignKey")';
+        if (cascadeType != null) {
+          columnRelations += ' ON ${cascadeType.name} CASCADE';
+        }
         columnRelations += '\n);';
         columnRelations +=
             'ALTER TABLE "$tablename" ADD COLUMN IF NOT EXISTS "$localKey" $primaryKeyType REFERENCES "$referenceeTableName" ("$foreignKey");';

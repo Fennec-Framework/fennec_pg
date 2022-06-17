@@ -1,5 +1,6 @@
 enum JoinType { inner, left, right, full, self }
-enum LoadType { include, exclude }
+enum FetchType { include, exclude }
+enum CascadeType { delete, update }
 
 abstract class RelationshipType {
   static const int hasMany = 0;
@@ -12,35 +13,32 @@ class Relationship {
   final int type;
   final String? localKey;
   final String? foreignKey;
-  final String? foreignTable;
-  final bool? cascadeOnDelete;
+
+  final CascadeType? cascadeType;
   final JoinType? joinType;
-  final LoadType? loadType;
+  final FetchType? fetchType;
 
   const Relationship(this.type,
       {this.localKey,
       this.foreignKey,
-      this.foreignTable,
-      this.cascadeOnDelete,
+      this.cascadeType,
       this.joinType,
-      this.loadType});
+      this.fetchType});
 }
 
 class HasMany extends Relationship {
   const HasMany(
       {String? localKey,
       String? foreignKey,
-      String? foreignTable,
-      bool cascadeOnDelete = false,
-      LoadType loadType = LoadType.exclude,
+      CascadeType? cascadeOnDelete,
+      FetchType fetchType = FetchType.exclude,
       JoinType? joinType})
       : super(RelationshipType.hasMany,
             localKey: localKey,
             foreignKey: foreignKey,
-            foreignTable: foreignTable,
-            cascadeOnDelete: cascadeOnDelete == true,
+            cascadeType: cascadeOnDelete,
             joinType: joinType,
-            loadType: loadType);
+            fetchType: fetchType);
 }
 
 const HasMany hasMany = HasMany();
@@ -49,17 +47,15 @@ class HasOne extends Relationship {
   const HasOne({
     String? localKey,
     String? foreignKey,
-    String? foreignTable,
-    bool cascadeOnDelete = false,
+    CascadeType? cascadeType,
     JoinType? joinType,
-    LoadType loadType = LoadType.exclude,
+    FetchType fetchType = FetchType.exclude,
   }) : super(RelationshipType.hasOne,
             localKey: localKey,
             foreignKey: foreignKey,
-            foreignTable: foreignTable,
-            cascadeOnDelete: cascadeOnDelete == true,
+            cascadeType: cascadeType,
             joinType: joinType,
-            loadType: loadType);
+            fetchType: fetchType);
 }
 
 const HasOne hasOne = HasOne();
@@ -68,15 +64,13 @@ class BelongsTo extends Relationship {
   const BelongsTo({
     String? localKey,
     String? foreignKey,
-    String? foreignTable,
     JoinType? joinType,
-    LoadType loadType = LoadType.exclude,
+    FetchType fetchType = FetchType.exclude,
   }) : super(RelationshipType.belongsTo,
             localKey: localKey,
             foreignKey: foreignKey,
-            foreignTable: foreignTable,
             joinType: joinType,
-            loadType: loadType);
+            fetchType: fetchType);
 }
 
 const BelongsTo belongsTo = BelongsTo();

@@ -20,7 +20,7 @@ class PoolSettingsImpl implements PoolSettings {
       this.idleTimeout = const Duration(minutes: 10),
       this.limitTimeout = const Duration(milliseconds: 700),
       this.maxLifetime = const Duration(minutes: 30),
-      this.leakDetectionThreshold, // Disabled by default.
+      this.leakDetectionThreshold,
       this.testConnections = false,
       this.restartIfAllConnectionsLeaked = false,
       this.applicationName,
@@ -73,7 +73,6 @@ class PoolSettingsImpl implements PoolSettings {
         timeZone: timeZone);
   }
 
-  // Ids will be unique for this isolate.
   static int _sequence = 0;
 
   @override

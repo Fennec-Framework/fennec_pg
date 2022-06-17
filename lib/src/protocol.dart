@@ -10,8 +10,6 @@ abstract class ProtocolMessage {
 
 class Startup implements ProtocolMessage {
   Startup(this.user, this.database, [this.parameters = const {}]);
-
-  // Startup and ssl request are the only messages without a messageCode.
   @override
   final int messageCode = 0;
   final int protocolVersion = 196608;
@@ -49,7 +47,6 @@ class Startup implements ProtocolMessage {
 }
 
 class SslRequest implements ProtocolMessage {
-  // Startup and ssl request are the only messages without a messageCode.
   @override
   final int messageCode = 0;
   @override
@@ -77,12 +74,6 @@ class Terminate implements ProtocolMessage {
 
 const int authTypeOk = 0;
 const int authTypeMd5 = 5;
-
-//const int authOk = 0;
-//const int authKerebosV5 = 2;
-//const int authScm = 6;
-//const int authGss = 7;
-//const int authClearText = 3;
 
 class AuthenticationRequest implements ProtocolMessage {
   AuthenticationRequest.ok()
@@ -239,8 +230,6 @@ class RowDescription implements ProtocolMessage {
       });
 }
 
-// Performance DataRows. multiple rows aggregated into one.
-
 class DataRow implements ProtocolMessage {
   DataRow.fromBytes(this.values);
 
@@ -360,7 +349,7 @@ abstract class BaseResponse implements ProtocolMessage {
     fields.forEach((k, v) => mb
       ..addUtf8(k)
       ..addUtf8(v));
-    mb.addByte(0); // Terminator
+    mb.addByte(0);
     return mb.build();
   }
 
@@ -441,9 +430,7 @@ class _MessageBuilder {
     _builder.addByte(d);
   }
 
-  /// Add a null terminated string.
   void addUtf8(String s) {
-    // Postgresql server must be configured to accept utf8 - this is the default.
     _builder.add(utf8.encode(s));
     addByte(0);
   }

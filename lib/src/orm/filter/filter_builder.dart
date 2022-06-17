@@ -1,6 +1,6 @@
 class ConditionLogic {
-  static const String AND = 'AND';
-  static const String OR = 'OR';
+  static const String and = 'AND';
+  static const String or = 'OR';
   static const String IN = 'IN';
 }
 
@@ -26,14 +26,14 @@ class FilterBuilder {
   }
 
   FilterBuilder and(FilterBuilder cond) {
-    cond.logic = ConditionLogic.AND;
+    cond.logic = ConditionLogic.and;
     conditionQueue.add(cond);
 
     return this;
   }
 
   FilterBuilder or(FilterBuilder cond) {
-    cond.logic = ConditionLogic.OR;
+    cond.logic = ConditionLogic.or;
     conditionQueue.add(cond);
     return this;
   }

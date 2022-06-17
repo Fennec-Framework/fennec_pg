@@ -1,5 +1,4 @@
 import 'package:fennec_pg/fennec_pg.dart';
-import 'package:fennec_pg/src/orm/filter/filter_builder.dart';
 
 class Join {
   JoinType joinType;

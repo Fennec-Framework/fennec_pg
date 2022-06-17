@@ -8,7 +8,7 @@ import 'core/fennec_pg.dart';
 class Query {
   int state = queued;
   final String sql;
-  final StreamController<ARow> controller = StreamController<ARow>();
+  final StreamController<Row> controller = StreamController<Row>();
   int commandIndex = 0;
   int? columnCount;
   List<Column>? columns;
@@ -43,7 +43,6 @@ class Query {
 
   void addError(Object err) {
     controller.addError(err);
-    // stream will be closed once the ready for query message is received.
   }
 
   void close() {
@@ -52,16 +51,12 @@ class Query {
   }
 }
 
-//TODO rename to field, as it may not be a column.
-class Column implements AColumn {
+class Column implements IColumn {
   @override
   final int index;
   @override
   final String name;
 
-  //TODO figure out what to name these.
-  // Perhaps just use libpq names as they will be documented in existing code
-  // examples. It may not be neccesary to store all of this info.
   @override
   final int fieldId;
   @override
@@ -86,25 +81,25 @@ class Column implements AColumn {
       'Column: index: $index, name: $name, fieldId: $fieldId, tableColNo: $tableColNo, fieldType: $fieldType, dataSize: $dataSize, typeModifier: $typeModifier, formatCode: $formatCode.';
 }
 
-class Row implements ARow {
+typedef RowFunction = void Function(String columnName, dynamic columnValue);
+
+class Row implements IRow {
   Row(this.columnNames, this.columnValues, this.index, this.columns) {
     assert(columnNames.length == columnValues.length);
   }
 
-  // Map column name to column index
   final Map<Symbol, int> index;
   final List<String> columnNames;
   final List columnValues;
-  final List<AColumn> columns;
+  final List<IColumn> columns;
 
   @override
   operator [](int i) => columnValues[i];
 
-  @override
-  void forEach(void f(String columnName, columnValue)) {
+  void forEach(RowFunction rowFunction) {
     assert(columnValues.length == columnNames.length);
     for (int i = 0; i < columnValues.length; i++) {
-      f(columnNames[i], columnValues[i]);
+      rowFunction(columnNames[i], columnValues[i]);
     }
   }
 
@@ -129,5 +124,5 @@ class Row implements ARow {
       Map<String, dynamic>.fromIterables(columnNames, columnValues);
 
   @override
-  List<AColumn> getColumns() => UnmodifiableListView<AColumn>(columns);
+  List<IColumn> getColumns() => UnmodifiableListView<IColumn>(columns);
 }
