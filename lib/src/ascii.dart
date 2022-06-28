@@ -65,8 +65,6 @@ const int $quot = 0x22;
 
 const int $quote = 0x22;
 
-const int $double_quote = 0x22;
-
 const int $doubleQuote = 0x22;
 
 const int $quotation = 0x22;
@@ -87,27 +85,17 @@ const int $apos = 0x27;
 
 const int $apostrophe = 0x27;
 
-const int $single_quote = 0x27;
-
 const int $singleQuote = 0x27;
 
 const int $lparen = 0x28;
 
-const int $open_paren = 0x28;
-
 const int $openParen = 0x28;
-
-const int $open_parenthesis = 0x28;
 
 const int $openParenthesis = 0x28;
 
 const int $rparen = 0x29;
 
-const int $close_paren = 0x29;
-
 const int $closeParen = 0x29;
-
-const int $close_parenthesis = 0x29;
 
 const int $closeParenthesis = 0x29;
 
@@ -157,13 +145,9 @@ const int $semicolon = 0x3B;
 
 const int $lt = 0x3C;
 
-const int $less_than = 0x3C;
-
 const int $lessThan = 0x3C;
 
 const int $langle = 0x3C;
-
-const int $open_angle = 0x3C;
 
 const int $openAngle = 0x3C;
 
@@ -171,13 +155,9 @@ const int $equal = 0x3D;
 
 const int $gt = 0x3E;
 
-const int $greater_than = 0x3E;
-
 const int $greaterThan = 0x3E;
 
 const int $rangle = 0x3E;
-
-const int $close_angle = 0x3E;
 
 const int $closeAngle = 0x3E;
 
@@ -239,15 +219,11 @@ const int $Z = 0x5A;
 
 const int $lbracket = 0x5B;
 
-const int $open_bracket = 0x5B;
-
 const int $openBracket = 0x5B;
 
 const int $backslash = 0x5C;
 
 const int $rbracket = 0x5D;
-
-const int $close_bracket = 0x5D;
 
 const int $closeBracket = 0x5D;
 
@@ -321,8 +297,6 @@ const int $z = 0x7A;
 
 const int $lbrace = 0x7B;
 
-const int $open_brace = 0x7B;
-
 const int $openBrace = 0x7B;
 
 const int $pipe = 0x7C;
@@ -330,8 +304,6 @@ const int $pipe = 0x7C;
 const int $bar = 0x7C;
 
 const int $rbrace = 0x7D;
-
-const int $close_brace = 0x7D;
 
 const int $closeBrace = 0x7D;
 

@@ -4,24 +4,18 @@ import 'package:fennec_pg/fennec_pg.dart';
 class User extends Serializable {
   @PrimaryKey(autoIncrement: true, columnType: ColumnType.bigInt)
   int? id;
-  @Column(isNullable: false, indexType: IndexType.unique)
-  late String name;
+  @Column(isNullable: false, indexType: IndexType.unique, alias: 'user_name')
+  late String userName;
   @Column(isNullable: false, indexType: IndexType.unique)
   late String email;
-  @HasOne(
-      localKey: 'user_id',
-      foreignKey: 'id',
-      fetchType: FetchType.include,
-      cascadeType: CascadeType.delete)
-  Account? account;
+  @Column(isNullable: false, indexType: IndexType.unique)
+  late String password;
+
   User();
   User.fromJson(Map<String, dynamic> map) {
     id = map['id'];
-    name = map['name'];
+    userName = map['user_name'];
     email = map['email'];
-    if (map['account'] != null) {
-      account = Account.fromJson(map['account']);
-    }
   }
 }
 

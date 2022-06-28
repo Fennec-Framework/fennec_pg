@@ -74,23 +74,3 @@ class BelongsTo extends Relationship {
 }
 
 const BelongsTo belongsTo = BelongsTo();
-
-/*class ManyToMany extends Relationship {
-  final Type through;
-  const ManyToMany(
-    this.through, {
-    String? localKey,
-    String? foreignKey,
-    String? foreignTable,
-    bool cascadeOnDelete = false,
-    JoinType? joinType,
-    LoadType loadType = LoadType.exclude,
-  }) : super(
-            RelationshipType.hasMany, // Many-to-Many is actually just a hasMany
-            localKey: localKey,
-            foreignKey: foreignKey,
-            foreignTable: foreignTable,
-            cascadeOnDelete: cascadeOnDelete == true,
-            joinType: joinType,
-            loadType: loadType);
-}*/

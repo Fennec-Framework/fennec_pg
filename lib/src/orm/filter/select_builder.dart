@@ -12,12 +12,13 @@ class SelectBuilder {
   final Map<String, String> sorts = {};
   final List<Join> joins = [];
   List<String> columnsToSelect = [];
-  String table;
+  String? table;
   FilterBuilder? condition;
   int? limit;
   int? offset;
-  SelectBuilder(this.table, this.columnsToSelect);
-
+  SelectBuilder(this.columnsToSelect, {String? table}) {
+    table = table;
+  }
   void setLimit(int limit) {
     this.limit = limit;
   }
@@ -51,11 +52,18 @@ class SelectBuilder {
 
   @override
   String toString() {
+    if (table == null) {
+      throw Exception(' you should give tablename');
+    }
+    if (columnsToSelect.length == 1 && columnsToSelect.first == '*') {
+      return 'SELECT *  FROM ' '"$table"';
+    }
     return 'SELECT ' + columnsToSelect.join(',') + ' FROM ' + '"$table"';
   }
 
   String makeQuery() {
     String query = toString();
+
     for (var join in joins) {
       query += ' ' +
           join.joinType.name.toUpperCase() +
@@ -82,6 +90,7 @@ class SelectBuilder {
     if (offset != null) {
       query += ' offset' ' ' + offset!.toString();
     }
+
     return query;
   }
 }

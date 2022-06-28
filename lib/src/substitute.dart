@@ -148,7 +148,7 @@ class Scanner {
         switch (c) {
           case $at:
             return false;
-          case $single_quote:
+          case $singleQuote:
           case $quot:
           case $dollar:
             esc = c;
@@ -203,8 +203,8 @@ class Pair<F, S> {
   @override
   int get hashCode => Object.hash(first, second);
   @override
-  bool operator ==(Object o) =>
-      o is Pair && first == o.first && second == o.second;
+  bool operator ==(Object other) =>
+      other is Pair && first == other.first && second == other.second;
   @override
   String toString() => toJson().toString();
 }

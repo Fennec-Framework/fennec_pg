@@ -1,22 +1,27 @@
 import '../../../fennec_pg.dart';
 
-class SelectBuilderWithNestedJsonOutPut extends SelectBuilder {
-  final List<JoinOutPut> joinPutputs = [];
+class SelectBuilderWithNestedJsonOutput extends SelectBuilder {
+  final List<JoinOutput> joinPutputs = [];
 
-  SelectBuilderWithNestedJsonOutPut(String table, List<String> columnsToSelect)
-      : super(table, columnsToSelect);
+  SelectBuilderWithNestedJsonOutput(List<String> columnsToSelect,
+      {String? table})
+      : super(columnsToSelect, table: table);
 
   void joinOutPut(JoinType joinType, String tableName, String tableAlias,
       FilterBuilder joinCondition, String tableAliasOutput, String groupBy,
       {bool resultAsArray = false}) {
-    joinPutputs.add(JoinOutPut(joinType, tableName, tableAlias,
+    joinPutputs.add(JoinOutput(joinType, tableName, tableAlias,
         tableAliasOutput, joinCondition, groupBy,
         resultAsArray: resultAsArray));
   }
 
   @override
   String toString() {
-    return 'SELECT ' + columnsToSelect.join(',') + ' FROM ' + table;
+    if (table == null) {
+      throw Exception(' you should give tablename');
+    }
+
+    return 'SELECT ' + columnsToSelect.join(',') + ' FROM ' + '"$table"';
   }
 
   @override

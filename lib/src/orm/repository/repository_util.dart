@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:mirrors';
 
-import 'package:fennec_pg/src/orm/repository/repository.dart';
-
 import '../annotations/annotations.dart';
 import '../migrations.dart';
 

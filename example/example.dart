@@ -1,18 +1,23 @@
 import 'package:fennec_pg/fennec_pg.dart';
+import 'package:fennec_pg/src/orm/filter/field.dart';
 
 import 'models/user.dart';
 import 'repositories/repository.dart';
 
 void main(List<String> arguments) async {
-  var uri = 'postgres://user:password@localhost:5432/db-name';
+  var uri = 'postgres://postgres:StartAppPassword@localhost:5432/test_flutter';
   await PGConnectionAdapter.init(uri);
-  final result = await PGConnectionAdapter.connection
-      .query('select * from users')
-      .toList();
+  UserRepository userRepository = UserRepository();
+  User user = User();
+  user.email = '131@web.de';
+  user.userName = 'ak1';
+  user.password = '123456';
 
-  for (var row in result) {
-    print(row.toMap());
-  }
+  var userResult = await userRepository.selectAll(SelectBuilder(['*'])
+    ..where(Equals(Field.tableColumn('email'), Field.string('12@web.de'))
+        .or(Equals(Field.tableColumn('id'), Field.int(1)))
+        .and(In(Field.tableColumn('id'), Field.list([1, 2])))));
+  print(userResult);
   /* AccountRepository accountRepository = AccountRepository();
   UserRepository userRepository = UserRepository();
   User user = User();

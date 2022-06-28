@@ -138,7 +138,7 @@ class MessageBuffer {
     addByte(0);
   }
 
-  void setLength({bool startup: false}) {
+  void setLength({bool startup = false}) {
     int offset = 0;
     int i = _buffer.length;
 

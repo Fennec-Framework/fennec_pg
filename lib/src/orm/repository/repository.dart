@@ -400,10 +400,12 @@ abstract class Repository<T, S> implements IRepository<T, S> {
         values.add('$value');
       }
     });
+
     String sqlQuery =
         'INSERT INTO "$tablename"(${keys.join(",")}) VALUES (${values.join(",")}) RETURNING *';
     final result =
         await PGConnectionAdapter.connection.query(sqlQuery).toList();
+
     if (result.isNotEmpty) {
       var element = Map<String, dynamic>.from(result.first.toMap());
       if (parentMap.isNotEmpty) {
@@ -510,16 +512,40 @@ abstract class Repository<T, S> implements IRepository<T, S> {
   }
 
   @override
-  Future<List<T?>> select(SelectBuilder selectBuilder) async {
+  Future<List<T?>> selectAll(SelectBuilder selectBuilder) async {
     List<T?> result = [];
     ClassMirror cm = reflectClass(T);
-    print(selectBuilder.makeQuery());
+    selectBuilder.table = RepositoryUtils.getTableName(cm);
     final pgResult = await PGConnectionAdapter.connection
         .query(selectBuilder.makeQuery())
         .toList();
     for (var item in pgResult) {
       Map<String, dynamic> map = {};
-      if (selectBuilder is SelectBuilderWithNestedJsonOutPut) {
+      if (selectBuilder is SelectBuilderWithNestedJsonOutput) {
+        map = Map<String, dynamic>.from(item.toMap()['row_to_json']);
+      } else {
+        map = Map<String, dynamic>.from(item.toMap());
+      }
+
+      InstanceMirror res = cm.newInstance(#fromJson, [map]);
+      result.add(res.reflectee);
+    }
+    return result;
+  }
+
+  @override
+  Future<List<T?>> selectOne(SelectBuilder selectBuilder) async {
+    List<T?> result = [];
+    ClassMirror cm = reflectClass(T);
+    selectBuilder.setLimit(1);
+    selectBuilder.table = RepositoryUtils.getTableName(cm);
+
+    final pgResult = await PGConnectionAdapter.connection
+        .query(selectBuilder.makeQuery())
+        .toList();
+    for (var item in pgResult) {
+      Map<String, dynamic> map = {};
+      if (selectBuilder is SelectBuilderWithNestedJsonOutput) {
         map = Map<String, dynamic>.from(item.toMap()['row_to_json']);
       } else {
         map = Map<String, dynamic>.from(item.toMap());

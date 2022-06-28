@@ -267,7 +267,7 @@ class ConnectionImpl implements Connection {
     }
   }
 
-  void _handleSocketError(error, {bool closed: false}) {
+  void _handleSocketError(error, {bool closed = false}) {
     if (_state == ConnectionState.closed) {
       _messages.add(ClientMessageImpl(
           isError: false,

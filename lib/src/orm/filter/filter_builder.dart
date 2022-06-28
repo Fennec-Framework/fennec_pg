@@ -1,12 +1,15 @@
+import 'field.dart';
+import 'sql_parser.dart';
+
 class ConditionLogic {
   static const String and = 'AND';
   static const String or = 'OR';
-  static const String IN = 'IN';
+  static const String iN = 'IN';
 }
 
 class FilterBuilder {
-  dynamic firstVar;
-  dynamic secondVar;
+  Field firstVar;
+  Field secondVar;
   String condition;
   String? logic;
   List<FilterBuilder> conditionQueue = [];
@@ -20,8 +23,10 @@ class FilterBuilder {
       if (cond.logic != null) {
         query += '  ' + cond.logic! + '  ';
       }
-      query += '${cond.firstVar}  ${cond.condition}  ${cond.secondVar}';
+      query +=
+          '${SqlParser.toSql(cond.firstVar)}  ${cond.condition}  ${SqlParser.toSql(cond.secondVar)}';
     }
+
     return query;
   }
 
@@ -40,31 +45,31 @@ class FilterBuilder {
 }
 
 class Equals extends FilterBuilder {
-  Equals(var firstVar, var secondVar, [String? logic])
+  Equals(Field firstVar, Field secondVar, [String? logic])
       : super(firstVar, '=', secondVar, logic);
 }
 
 class In extends FilterBuilder {
-  In(var firstVar, var secondVar, [String? logic])
+  In(Field firstVar, Field secondVar, [String? logic])
       : super(firstVar, 'IN', secondVar, logic);
 }
 
 class NotIn extends FilterBuilder {
-  NotIn(var firstVar, var secondVar, [String? logic])
+  NotIn(Field firstVar, Field secondVar, [String? logic])
       : super(firstVar, 'NOT IN', secondVar, logic);
 }
 
 class NotEquals extends FilterBuilder {
-  NotEquals(var firstVar, var secondVar, [String? logic])
+  NotEquals(Field firstVar, Field secondVar, [String? logic])
       : super(firstVar, '<>', secondVar, logic);
 }
 
 class LowerThan extends FilterBuilder {
-  LowerThan(var firstVar, var secondVar, [String? logic])
+  LowerThan(Field firstVar, Field secondVar, [String? logic])
       : super(firstVar, '<', secondVar, logic);
 }
 
 class BiggerThan extends FilterBuilder {
-  BiggerThan(var firstVar, var secondVar, [String? logic])
+  BiggerThan(Field firstVar, Field secondVar, [String? logic])
       : super(firstVar, '>', secondVar, logic);
 }

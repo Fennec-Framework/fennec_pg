@@ -675,7 +675,7 @@ class Waiting {
   @override
   int get hashCode => c.hashCode;
   @override
-  bool operator ==(o) => o is Waiting && o.c == c;
+  bool operator ==(other) => other is Waiting && other.c == c;
 }
 
 final _random = Random();
