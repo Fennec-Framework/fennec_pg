@@ -103,7 +103,7 @@ class AccountRepository extends Repository<Account, int> {}
 
    ``` dart
    
-  SelectBuilder selectBuilder = SelectBuilder(['*']);
+  SelectBuilder selectBuilder = SelectBuilder(['*'],table:'users');
   FilterBuilder filterBuilder = FilterBuilder(Field.tableColumn('id'), '=', Field.int(2));
   filterBuilder.or(FilterBuilder(Field.tableColumn('id'), '=', Field.int(4)));
   selectBuilder.where(filterBuilder);
