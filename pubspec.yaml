@@ -1,6 +1,6 @@
 name: fennec_pg
-description: a dart plugin to connect with postgres included orm.
-version: 0.0.1
+description: this plugin belongs to Fennec Framework. it's a performant Postgresql Driver included ORM.
+version: 0.0.2
 homepage: https://github.com/Fennec-Framework/fennec_pg
 
 environment:
