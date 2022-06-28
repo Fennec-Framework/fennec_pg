@@ -103,9 +103,9 @@ class AccountRepository extends Repository<Account, int> {}
 
    ``` dart
    
-  SelectBuilder selectBuilder = SelectBuilder('Model', ['*']);
-  FilterBuilder filterBuilder = FilterBuilder('id', '=', 2);
-  filterBuilder.or(FilterBuilder('id', '=', 4));
+  SelectBuilder selectBuilder = SelectBuilder(['*']);
+  FilterBuilder filterBuilder = FilterBuilder(Field.tableColumn('id'), '=', Field.int(2));
+  filterBuilder.or(FilterBuilder(Field.tableColumn('id'), '=', Field.int(4)));
   selectBuilder.where(filterBuilder);
   final result = await PGConnectionAdapter.connection
       .query(selectBuilder.makeQuery())
