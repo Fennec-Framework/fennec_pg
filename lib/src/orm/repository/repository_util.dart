@@ -73,6 +73,7 @@ class RepositoryUtils {
       query += '\n);';
       query += query1;
     }
+
     return query;
   }
 
@@ -91,13 +92,14 @@ class RepositoryUtils {
         if (meta.reflectee is PrimaryKey) {
           column = columnName + ' ';
           InstanceMirror cm = reflect(meta.reflectee);
-          ColumnType? columnType = cm.getField(#type).reflectee;
+          ColumnType? columnType = cm.getField(#columnType).reflectee;
           bool autoIncrement = cm.getField(#autoIncrement).reflectee;
+
           if (autoIncrement) {
             column += ' SERIAL PRIMARY KEY  NOT NULL';
           } else {
             if (columnType != null) {
-              column += columnType.name + 'PRIMARY KEY  NOT NULL';
+              column += columnType.name + '  PRIMARY KEY  NOT NULL';
             } else {
               column += type + 'PRIMARY KEY  NOT NULL';
             }

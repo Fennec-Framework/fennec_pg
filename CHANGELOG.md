@@ -1,3 +1,7 @@
+## 0.0.3
+
+- fix bugs with PrimaryKey.
+
 ## 0.0.2
 
 - improve FilterBuilder.

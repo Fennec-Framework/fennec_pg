@@ -5,10 +5,11 @@ import 'models/user.dart';
 import 'repositories/repository.dart';
 
 void main(List<String> arguments) async {
-  var uri = 'postgres://postgres:StartAppPassword@localhost:5432/test_flutter';
+  var uri = 'postgres://postgres:StartAppPassword@localhost:5432/topicsapp_db';
   await PGConnectionAdapter.init(uri);
   UserRepository userRepository = UserRepository();
-  User user = User();
+  TestRepository testRepository = TestRepository();
+  /*User user = User();
   user.email = '131@web.de';
   user.userName = 'ak1';
   user.password = '123456';
@@ -17,7 +18,9 @@ void main(List<String> arguments) async {
     ..where(Equals(Field.tableColumn('email'), Field.string('12@web.de'))
         .or(Equals(Field.tableColumn('id'), Field.int(1)))
         .and(In(Field.tableColumn('id'), Field.list([1, 2])))));
-  print(userResult);
+  print(userResult);*/
+  final x = await testRepository.insert(Test('asss'));
+  print(x);
   /* AccountRepository accountRepository = AccountRepository();
   UserRepository userRepository = UserRepository();
   User user = User();

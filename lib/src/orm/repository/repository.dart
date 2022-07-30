@@ -333,6 +333,7 @@ abstract class Repository<T, S> implements IRepository<T, S> {
     dynamic parentId;
     Map<String, dynamic> parentMap = {};
     Map<String, dynamic> map = res.invoke(#serializeModel, []).reflectee;
+
     List<Map<String, dynamic>> children = [];
     var decls = cm.declarations.values.whereType<VariableMirror>();
     for (var dm in decls) {
@@ -403,6 +404,7 @@ abstract class Repository<T, S> implements IRepository<T, S> {
 
     String sqlQuery =
         'INSERT INTO "$tablename"(${keys.join(",")}) VALUES (${values.join(",")}) RETURNING *';
+
     final result =
         await PGConnectionAdapter.connection.query(sqlQuery).toList();
 

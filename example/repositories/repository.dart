@@ -5,3 +5,5 @@ import '../models/user.dart';
 class UserRepository extends Repository<User, int> {}
 
 class AccountRepository extends Repository<Account, int> {}
+
+class TestRepository extends Repository<Test, String> {}

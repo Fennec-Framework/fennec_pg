@@ -17,6 +17,7 @@ abstract class Serializable {
             Type? serializableTo = cm.getField(#serializableTo).reflectee;
             Type type = serializableTo ?? dm.type.reflectedType;
             var key = alias ?? MirrorSystem.getName(dm.simpleName);
+
             if (im.getField(dm.simpleName).reflectee != null) {
               if (type == int) {
                 var val =
@@ -44,6 +45,13 @@ abstract class Serializable {
                 map[key] = im.getField(dm.simpleName).reflectee;
               }
             } else {
+              map[key] = im.getField(dm.simpleName).reflectee;
+            }
+          } else if (meta.reflectee is PrimaryKey) {
+            var key = MirrorSystem.getName(dm.simpleName);
+            InstanceMirror cm = reflect(meta.reflectee);
+            bool autoIncrement = cm.getField(#autoIncrement).reflectee;
+            if (!autoIncrement) {
               map[key] = im.getField(dm.simpleName).reflectee;
             }
           }
