@@ -1,5 +1,6 @@
-import 'field.dart';
-import 'sql_parser.dart';
+import 'package:fennec_pg/src/orm/filter/sql_parser.dart';
+
+import '../../../fennec_pg.dart';
 
 class ConditionLogic {
   static const String and = 'AND';

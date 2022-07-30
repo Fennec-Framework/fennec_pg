@@ -1,4 +1,4 @@
-import '../annotations/annotations.dart';
+import '../../../fennec_pg.dart';
 
 class Field {
   final Type fieldType;

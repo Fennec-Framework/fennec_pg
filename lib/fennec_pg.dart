@@ -10,3 +10,5 @@ export 'src/orm/filter/select_builder_with_nested_json.dart';
 export 'src/orm/relations.dart';
 export 'pg_connection_adapter.dart';
 export 'src/orm/migrations.dart';
+export 'src/orm/migrations.dart';
+export 'src/orm/filter/field.dart';

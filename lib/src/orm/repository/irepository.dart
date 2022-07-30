@@ -1,5 +1,4 @@
-import 'package:fennec_pg/src/orm/filter/filter_builder.dart';
-import 'package:fennec_pg/src/orm/filter/select_builder.dart';
+import '../../../fennec_pg.dart';
 
 abstract class IRepository<T, S> {
   Future<List<T>> findAll({FilterBuilder filterBuilder});
