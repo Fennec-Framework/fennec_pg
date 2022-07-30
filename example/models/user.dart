@@ -23,9 +23,12 @@ class User extends Serializable {
 class Test extends Serializable {
   @PrimaryKey(columnType: ColumnType.varChar, autoIncrement: false)
   late String test;
+  @Column(type: ColumnType.json)
+  Map<String, dynamic> x = {};
   Test(this.test);
   Test.fromJson(Map<String, dynamic> map) {
     test = map['test'];
+    x = map['x'];
   }
 }
 

@@ -20,7 +20,9 @@ void main(List<String> arguments) async {
         .or(Equals(Field.tableColumn('id'), Field.int(1)))
         .and(In(Field.tableColumn('id'), Field.list([1, 2])))));
   print(userResult);*/
-  final x = await testRepository.insert(Test('asss'));
+  Test test = Test('adsssadasfsss');
+  test.x = {'Akran': true, 'Chorfi': 'aaa'};
+  final x = await testRepository.insert(test);
   print(x);
   /* AccountRepository accountRepository = AccountRepository();
   UserRepository userRepository = UserRepository();

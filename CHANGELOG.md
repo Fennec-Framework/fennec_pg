@@ -1,3 +1,7 @@
+## 0.0.4
+
+- support json.
+
 ## 0.0.3
 
 - fix bugs with PrimaryKey.

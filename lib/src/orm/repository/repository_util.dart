@@ -79,6 +79,7 @@ class RepositoryUtils {
 
   static String processColunm(VariableMirror vm) {
     String type = getSqlType(vm.type.reflectedType.toString());
+
     if (type.isEmpty) {
       return "";
     }
@@ -249,6 +250,8 @@ class RepositoryUtils {
       return 'Text ARRAY';
     } else if (dartType == 'List<int>') {
       return 'INT ARRAY';
+    } else if (dartType.contains('Map<String')) {
+      return 'json';
     } else {
       return '';
     }

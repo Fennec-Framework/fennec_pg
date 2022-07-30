@@ -51,6 +51,7 @@ abstract class Serializable {
             var key = MirrorSystem.getName(dm.simpleName);
             InstanceMirror cm = reflect(meta.reflectee);
             bool autoIncrement = cm.getField(#autoIncrement).reflectee;
+
             if (!autoIncrement) {
               map[key] = im.getField(dm.simpleName).reflectee;
             }

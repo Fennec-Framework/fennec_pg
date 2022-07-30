@@ -266,6 +266,11 @@ abstract class Repository<T, S> implements IRepository<T, S> {
         }
       }
     }
+    dynamic primaryKeyValue = value;
+
+    if (value is String) {
+      primaryKeyValue = "'$value'";
+    }
 
     if (!join.contains('from')) {
       join += 'from "$tablename" $tablename';
@@ -274,14 +279,15 @@ abstract class Repository<T, S> implements IRepository<T, S> {
     if (splittedQuery.length == 2) {
       join = '';
       join += splittedQuery.first +
-          ' where $tablename.$primaryKey = $value' +
+          ' where $tablename.$primaryKey = $primaryKeyValue' +
           ' ' +
           'GROUP ${splittedQuery[1]}';
       join += ')select row_to_json(c) from cte c;';
     } else {
-      join += ' where $tablename.$primaryKey = $value';
+      join += ' where $tablename.$primaryKey = $primaryKeyValue';
       join += ')select row_to_json(c) from cte c;';
     }
+
     var data = await PGConnectionAdapter.connection.query(join).toList();
     T? result;
     if (data.isNotEmpty) {
@@ -397,6 +403,23 @@ abstract class Repository<T, S> implements IRepository<T, S> {
           arrayValues.add("'$temp'");
         }
         values.add('ARRAY$arrayValues');
+      } else if (value is Map) {
+        int length = value.length;
+        int count = 0;
+        String encodeMap = "'{";
+        for (var element in value.entries) {
+          dynamic value = element.value;
+          if (value is String) {
+            value = '"$value"';
+          }
+          encodeMap += ' "${element.key}": $value';
+          if (count < length - 1) {
+            encodeMap += ',';
+            count++;
+          }
+        }
+        encodeMap += "}'";
+        values.add(encodeMap);
       } else {
         values.add('$value');
       }
@@ -598,9 +621,13 @@ abstract class Repository<T, S> implements IRepository<T, S> {
         }
       }
     });
+    dynamic primaryKeyValue = id;
 
+    if (id is String) {
+      primaryKeyValue = "'$id'";
+    }
     String temp =
-        'UPDATE "$tablename" SET ${query.join(',')} WHERE $primaryKey = $id';
+        'UPDATE "$tablename" SET ${query.join(',')} WHERE $primaryKey = $primaryKeyValue';
     if (returning) {
       temp += 'RETURNING *';
     }
