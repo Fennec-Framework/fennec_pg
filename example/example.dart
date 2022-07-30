@@ -5,7 +5,8 @@ import 'models/user.dart';
 import 'repositories/repository.dart';
 
 void main(List<String> arguments) async {
-  var uri = 'postgres://postgres:StartAppPassword@localhost:5432/topicsapp_db';
+  var uri = 'postgres://user:password@localhost:5432/db-name';
+
   await PGConnectionAdapter.init(uri);
   UserRepository userRepository = UserRepository();
   TestRepository testRepository = TestRepository();
