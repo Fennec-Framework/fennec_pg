@@ -1,3 +1,7 @@
+## 0.0.5
+
+- fix oneToMany relations.
+
 ## 0.0.4
 
 - support json.
