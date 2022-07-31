@@ -70,23 +70,20 @@ abstract class Repository<T, S> implements IRepository<T, S> {
               }
             }
           } else if (element.reflectee is HasMany) {
-            ClassMirror joinableTableInstance =
-                reflectClass(variableMirror.type.reflectedType);
-            String joinTableName =
-                RepositoryUtils.getTableName(joinableTableInstance);
             ClassMirror classMirror = reflectClass(
                 variableMirror.type.typeArguments.first.reflectedType);
-            joinTableName = RepositoryUtils.getTableName(classMirror);
+
+            String joinTableName = RepositoryUtils.getTableName(classMirror);
 
             InstanceMirror cm = reflect(element.reflectee);
             String localKey =
-                cm.getField(#fetchType).reflectee ?? "${tablename}_id";
+                cm.getField(#localKey).reflectee ?? "${tablename}_id";
 
             String foreignKey = cm.getField(#foreignKey).reflectee ?? "id";
             JoinType joinType =
                 cm.getField(#joinType).reflectee ?? JoinType.left;
             FetchType loadType =
-                cm.getField(#loadType).reflectee ?? FetchType.exclude;
+                cm.getField(#fetchType).reflectee ?? FetchType.exclude;
             if (loadType == FetchType.include) {
               String randomName = '"${RepositoryUtils.getRandString(5)}"';
               if (join.contains('JOIN') && join.contains('from')) {
@@ -354,7 +351,7 @@ abstract class Repository<T, S> implements IRepository<T, S> {
                   RepositoryUtils.getPrimaryKey(instanceMirror.type)
                       .replaceAll('"', '');
               Map<String, dynamic> tempMap =
-                  instanceMirror.invoke(#toJson, []).reflectee;
+                  instanceMirror.invoke(#serializeModel, []).reflectee;
               String foreignKey =
                   meta.getField(#foreignKey).reflectee ?? "{$tablename}_id";
               parentId = tempMap[parentPrimaryKey];
@@ -369,8 +366,7 @@ abstract class Repository<T, S> implements IRepository<T, S> {
                 });
               }
             }
-          }
-          if (meta.reflectee is HasOne || meta.reflectee is HasMany) {
+          } else if (meta.reflectee is HasOne) {
             InstanceMirror instanceMirror = res.getField(dm.simpleName);
             if (instanceMirror.reflectee != null) {
               Map<String, dynamic> tempMap =
@@ -380,6 +376,24 @@ abstract class Repository<T, S> implements IRepository<T, S> {
               if (map.containsValue(instanceMirror.reflectee)) {
                 map.removeWhere(
                     (key, value) => value == instanceMirror.reflectee);
+              }
+            }
+          } else if (meta.reflectee is HasMany) {
+            InstanceMirror instanceMirror = res.getField(dm.simpleName);
+
+            if (instanceMirror.reflectee != null) {
+              for (var item in instanceMirror.reflectee) {
+                InstanceMirror instanceMirror = reflect(item);
+
+                Map<String, dynamic> tempMap =
+                    instanceMirror.invoke(#serializeModel, []).reflectee;
+                children.add({
+                  RepositoryUtils.getTableName(instanceMirror.type): tempMap
+                });
+                if (map.containsValue(instanceMirror.reflectee)) {
+                  map.removeWhere(
+                      (key, value) => value == instanceMirror.reflectee);
+                }
               }
             }
           }
@@ -440,8 +454,9 @@ abstract class Repository<T, S> implements IRepository<T, S> {
       for (var dm in decls) {
         if (dm.metadata.isNotEmpty) {
           for (var meta in dm.metadata) {
-            if (meta.reflectee is HasOne || meta.reflectee is HasMany) {
+            if (meta.reflectee is HasOne) {
               InstanceMirror instanceMirror = res.getField(dm.simpleName);
+
               if (instanceMirror.reflectee != null) {
                 String tablename =
                     RepositoryUtils.getTableName(instanceMirror.type);
@@ -508,6 +523,86 @@ abstract class Repository<T, S> implements IRepository<T, S> {
                         dm.simpleName,
                         classMirror.newInstance(
                             #fromJson, [rowResultAsMap]).reflectee);
+                  }
+                }
+              }
+            } else if (meta.reflectee is HasMany) {
+              InstanceMirror instanceMirror = res.getField(dm.simpleName);
+
+              if (instanceMirror.reflectee != null) {
+                for (var item in instanceMirror.reflectee) {
+                  InstanceMirror instanceMirror = reflect(item);
+                  String tablename =
+                      RepositoryUtils.getTableName(instanceMirror.type);
+
+                  String foreignKey =
+                      meta.getField(#localKey).reflectee ?? "${tablename}_id";
+                  int index = children
+                      .indexWhere((element) => element.containsKey(tablename));
+                  print(index);
+                  if (index != -1) {
+                    Map<String, dynamic> child = children[index][tablename];
+                    child.addAll({foreignKey: element[primaryKey]});
+                    List<String> keys = child.keys.toList();
+                    child.forEach((key, value) {
+                      if (value == null) keys.remove(key);
+                    });
+                    List<dynamic> values = [];
+                    child.forEach((key, value) {
+                      if (value != null) {
+                        if (value is String) {
+                          values.add('\'$value\'');
+                        } else if (value is List) {
+                          List<String> arrayValues = [];
+                          for (var temp in value) {
+                            arrayValues.add("'$temp'");
+                          }
+                          values.add('ARRAY$arrayValues');
+                        } else {
+                          values.add('$value');
+                        }
+                      }
+                    });
+                    for (int i = 0; i < keys.length; i++) {
+                      keys[i] = '"${keys[i]}"';
+                    }
+                    sqlQuery =
+                        'INSERT INTO "$tablename"(${keys.join(",")}) VALUES (${values.join(",")}) RETURNING *';
+
+                    var rowResult = await PGConnectionAdapter.connection
+                        .query(sqlQuery)
+                        .toList();
+                    Map<String, dynamic> rowResultAsMap = {};
+                    if (rowResult.isNotEmpty) {
+                      rowResultAsMap =
+                          Map<String, dynamic>.from(rowResult.first.toMap());
+                      ClassMirror classMirror = instanceMirror.type;
+
+                      var decls = instanceMirror.type.declarations.values
+                          .whereType<VariableMirror>();
+                      for (var decl in decls) {
+                        for (var meta in decl.metadata) {
+                          if (meta.reflectee is BelongsTo) {
+                            Type tableType = cm.reflectedType;
+                            if (decl.type.reflectedType.toString() ==
+                                tableType.toString()) {
+                              Map<String, dynamic> temp = {
+                                MirrorSystem.getName(decl.simpleName):
+                                    Map<String, dynamic>.from(element)
+                              };
+
+                              rowResultAsMap.addAll(temp);
+                            }
+                          }
+                        }
+                      }
+
+                      var child =
+                          newInstanceMirror.getField(dm.simpleName).reflectee;
+                      child.add(classMirror
+                          .newInstance(#fromJson, [rowResultAsMap]).reflectee);
+                      newInstanceMirror.setField(dm.simpleName, child);
+                    }
                   }
                 }
               }

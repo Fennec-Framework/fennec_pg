@@ -13,13 +13,10 @@ class RepositoryUtils {
   static String getTableName(ClassMirror cm) {
     late String tablename;
 
-    if (cm.typeArguments.isNotEmpty) {
-    } else {
-      for (var meta in cm.metadata) {
-        if (meta.reflectee is Table) {
-          tablename =
-              meta.reflectee.name ?? MirrorSystem.getName(cm.simpleName);
-        }
+    for (var meta in cm.metadata) {
+      if (meta.reflectee is Table) {
+        tablename = meta.reflectee.name ?? MirrorSystem.getName(cm.simpleName);
+        return tablename;
       }
     }
     return tablename;

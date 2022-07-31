@@ -5,7 +5,7 @@ import 'models/user.dart';
 import 'repositories/repository.dart';
 
 void main(List<String> arguments) async {
-  var uri = 'postgres://user:password@localhost:5432/db-name';
+  var uri = 'postgres://postgres:StartAppPassword@localhost:5432/topicsapp_db';
 
   await PGConnectionAdapter.init(uri);
   UserRepository userRepository = UserRepository();
@@ -20,10 +20,20 @@ void main(List<String> arguments) async {
         .or(Equals(Field.tableColumn('id'), Field.int(1)))
         .and(In(Field.tableColumn('id'), Field.list([1, 2])))));
   print(userResult);*/
-  Test test = Test('adsssadasfsss');
+  Test test = Test(DateTime.now().millisecondsSinceEpoch.toString());
+  Child child = Child();
   test.x = {'Akran': true, 'Chorfi': 'aaa'};
-  final x = await testRepository.insert(test);
-  print(x);
+  test.childs.add(child);
+  test.childs.add(Child());
+  final result = await testRepository.insert(test);
+
+  print(result!.toJson());
+  print('aftet insert');
+  final x = await testRepository.findAll();
+  for (var item in x) {
+    print(item.toJson());
+  }
+
   /* AccountRepository accountRepository = AccountRepository();
   UserRepository userRepository = UserRepository();
   User user = User();

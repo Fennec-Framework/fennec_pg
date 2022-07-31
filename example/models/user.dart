@@ -25,10 +25,27 @@ class Test extends Serializable {
   late String test;
   @Column(type: ColumnType.json)
   Map<String, dynamic> x = {};
+  @HasMany(
+      fetchType: FetchType.include, localKey: 'test_id', foreignKey: 'test')
+  List<Child> childs = [];
   Test(this.test);
   Test.fromJson(Map<String, dynamic> map) {
     test = map['test'];
     x = map['x'];
+
+    if (map['childs'] != null) {
+      childs = List.from(map['childs'].map((e) => Child.fromJson(e)));
+    }
+  }
+}
+
+@Table('child')
+class Child extends Serializable {
+  @PrimaryKey(autoIncrement: true)
+  late int? id;
+  Child();
+  Child.fromJson(Map<String, dynamic> map) {
+    id = map['id'];
   }
 }
 
