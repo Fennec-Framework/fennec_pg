@@ -197,13 +197,9 @@ abstract class Repository<T, S> implements IRepository<T, S> {
               }
             }
           } else if (element.reflectee is HasMany) {
-            ClassMirror joinableTableInstance =
-                reflectClass(variableMirror.type.reflectedType);
-            String joinTableName =
-                RepositoryUtils.getTableName(joinableTableInstance);
             ClassMirror classMirror = reflectClass(
                 variableMirror.type.typeArguments.first.reflectedType);
-            joinTableName = RepositoryUtils.getTableName(classMirror);
+            String joinTableName = RepositoryUtils.getTableName(classMirror);
 
             InstanceMirror cm = reflect(element.reflectee);
             String localKey =
@@ -539,7 +535,7 @@ abstract class Repository<T, S> implements IRepository<T, S> {
                       meta.getField(#localKey).reflectee ?? "${tablename}_id";
                   int index = children
                       .indexWhere((element) => element.containsKey(tablename));
-                  print(index);
+
                   if (index != -1) {
                     Map<String, dynamic> child = children[index][tablename];
                     child.addAll({foreignKey: element[primaryKey]});

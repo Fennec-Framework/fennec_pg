@@ -1,3 +1,7 @@
+## 0.0.6
+
+- fix bugs with findOneById.
+
 ## 0.0.5
 
 - fix oneToMany relations.

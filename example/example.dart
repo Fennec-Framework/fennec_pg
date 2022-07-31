@@ -29,10 +29,9 @@ void main(List<String> arguments) async {
 
   print(result!.toJson());
   print('aftet insert');
-  final x = await testRepository.findAll();
-  for (var item in x) {
-    print(item.toJson());
-  }
+  final x = await testRepository.findOneById('1659275792311');
+
+  print(x!.toJson());
 
   /* AccountRepository accountRepository = AccountRepository();
   UserRepository userRepository = UserRepository();
