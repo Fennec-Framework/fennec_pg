@@ -1,3 +1,7 @@
+## 0.0.7
+
+- fix bugs with updateOneById.
+
 ## 0.0.6
 
 - fix bugs with findOneById.

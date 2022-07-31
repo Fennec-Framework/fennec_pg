@@ -703,6 +703,23 @@ abstract class Repository<T, S> implements IRepository<T, S> {
             arrayValues.add("'$temp'");
           }
           query.add('"$key" = ARRAY$arrayValues');
+        } else if (value is Map) {
+          int length = value.length;
+          int count = 0;
+          String encodeMap = "'{";
+          for (var element in value.entries) {
+            dynamic value = element.value;
+            if (value is String) {
+              value = '"$value"';
+            }
+            encodeMap += ' "${element.key}": $value';
+            if (count < length - 1) {
+              encodeMap += ',';
+              count++;
+            }
+          }
+          encodeMap += "}'";
+          query.add('"$key" = $encodeMap');
         } else {
           if (withNull) {
             query.add('"$key" = $value');
@@ -719,6 +736,7 @@ abstract class Repository<T, S> implements IRepository<T, S> {
     }
     String temp =
         'UPDATE "$tablename" SET ${query.join(',')} WHERE $primaryKey = $primaryKeyValue';
+    print(temp);
     if (returning) {
       temp += 'RETURNING *';
     }
@@ -729,12 +747,24 @@ abstract class Repository<T, S> implements IRepository<T, S> {
       var decls = cm.declarations.values.whereType<VariableMirror>();
       for (var decl in decls) {
         for (var meta in decl.metadata) {
-          if (meta.reflectee is Relationship) {
+          if (meta.reflectee is HasOne || meta.reflectee is BelongsTo) {
             var relatedObject = instanceMirror.getField(decl.simpleName);
             if (relatedObject.reflectee != null) {
               Map<dynamic, dynamic> map =
-                  relatedObject.invoke(#serializeModel, []).reflectee;
+                  relatedObject.invoke(#toJson, []).reflectee;
               element.addAll({MirrorSystem.getName(decl.simpleName): map});
+            }
+          } else if (meta.reflectee is HasMany) {
+            var relatedObject = instanceMirror.getField(decl.simpleName);
+            List<Map<dynamic, dynamic>> childs = [];
+            if (relatedObject.reflectee != null) {
+              for (var item in relatedObject.reflectee) {
+                InstanceMirror instanceMirror = reflect(item);
+                Map<dynamic, dynamic> map =
+                    instanceMirror.invoke(#toJson, []).reflectee;
+                childs.add(map);
+              }
+              element.addAll({MirrorSystem.getName(decl.simpleName): childs});
             }
           }
         }

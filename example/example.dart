@@ -5,7 +5,7 @@ import 'models/user.dart';
 import 'repositories/repository.dart';
 
 void main(List<String> arguments) async {
-  var uri = 'postgres://postgres:StartAppPassword@localhost:5432/topicsapp_db';
+  var uri = 'postgres://postgres:StartAppPassword@localhost:5432/test_flutter';
 
   await PGConnectionAdapter.init(uri);
   UserRepository userRepository = UserRepository();
@@ -27,11 +27,14 @@ void main(List<String> arguments) async {
   test.childs.add(Child());
   final result = await testRepository.insert(test);
 
-  print(result!.toJson());
-  print('aftet insert');
-  final x = await testRepository.findOneById('1659275792311');
+  final x = await testRepository.findOneById('1659308470161');
 
-  print(x!.toJson());
+  if (x != null) {
+    x.x = {'1': 3322};
+
+    final y = await testRepository.updateOneById(x.test, x);
+    print(y!.toJson());
+  }
 
   /* AccountRepository accountRepository = AccountRepository();
   UserRepository userRepository = UserRepository();
