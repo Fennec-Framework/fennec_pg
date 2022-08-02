@@ -1,3 +1,7 @@
+## 0.0.9
+
+- implement store procedure feauture.
+
 ## 0.0.8
 
 - add pool connections.

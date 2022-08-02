@@ -1,5 +1,6 @@
 import '../client_message_impl.dart';
 import '../connection.dart';
+import '../prodecure_parameters.dart';
 import '../settings_impl.dart';
 import '../type_converter.dart';
 
@@ -18,6 +19,14 @@ Future<Connection> connect(String uri,
 
 abstract class Connection {
   Stream<IRow> query(String sql, [values]);
+  Stream<IRow> createProcedure(
+      {required String procedureName,
+      required List<ProcedureParameters> parameters,
+      required ProcedureParameters out,
+      required String body});
+  Stream<IRow> callProcedure(
+      {required String procedureName,
+      required List<ProcedureCallParameters> parameters});
   Future<int> execute(String sql, [values]);
   Future<T> runInTransaction<T>(Future<T> Function() operation,
       [Isolation isolation]);

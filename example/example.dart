@@ -1,5 +1,6 @@
 import 'package:fennec_pg/fennec_pg.dart';
 import 'package:fennec_pg/src/orm/filter/field.dart';
+import 'package:fennec_pg/src/prodecure_parameters.dart';
 
 import 'models/user.dart';
 import 'repositories/repository.dart';
@@ -10,6 +11,29 @@ void main(List<String> arguments) async {
   await PGConnectionAdapter.initPool(uri);
   UserRepository userRepository = UserRepository();
   TestRepository testRepository = TestRepository();
+  PGConnectionAdapter.connection.createProcedure(
+      procedureName: 'test',
+      parameters: [
+        ProcedureParameters(name: 'a', columnType: ColumnType.smallInt)
+      ],
+      out: ProcedureParameters(name: 'b', columnType: ColumnType.smallInt),
+      body: 'select (*) from users into b;');
+
+  final v = PGConnectionAdapter.connection
+      .callProcedure(procedureName: 'test', parameters: [
+    ProcedureCallParameters(
+        name: 'a', value: 1002, columnType: ColumnType.smallInt),
+    ProcedureCallParameters(
+        name: 'b', value: 1002, columnType: ColumnType.smallInt)
+  ]);
+  var s = await v.toList();
+  print(s.length);
+  for (int i = 0; i < s.length; i++) {
+    print(s[i].toMap());
+  }
+  s.map((e) {
+    print(e.toMap());
+  });
   /*User user = User();
   user.email = '131@web.de';
   user.userName = 'ak1';

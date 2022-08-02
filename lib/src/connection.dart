@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:fennec_pg/src/prodecure_parameters.dart';
 import 'package:fennec_pg/src/substitute.dart';
 
 import 'buffer.dart';
@@ -495,6 +496,63 @@ class ConnectionImpl implements Connection {
     } catch (ex, st) {
       return Stream.fromFuture(Future.error(ex, st));
     }
+  }
+
+  @override
+  Stream<IRow> callProcedure(
+      {required String procedureName,
+      required List<ProcedureCallParameters> parameters}) {
+    String sql = 'call $procedureName(';
+    for (int i = 0; i < parameters.length; i++) {
+      if (i < parameters.length - 1) {
+        sql +=
+            '${parameters[i].name} => ${parameters[i].value}::${parameters[i].columnType.name}, ';
+      } else {
+        sql +=
+            '${parameters[i].name} => ${parameters[i].value}::${parameters[i].columnType.name}) ';
+      }
+    }
+    print(sql);
+    return query(sql);
+  }
+
+  @override
+  Stream<IRow> createProcedure(
+      {required String procedureName,
+      required List<ProcedureParameters> parameters,
+      required ProcedureParameters out,
+      required String body}) {
+    String sql = '';
+    sql += ' create or replace procedure ' + procedureName + '(\n';
+
+    if (parameters.isEmpty) {
+      sql += out.name + ' ' + 'OUT' + out.columnType.name + ')\n';
+    } else {
+      sql += out.name + ' ' + 'OUT' + out.columnType.name + ',\n';
+    }
+    for (int i = 0; i < parameters.length; i++) {
+      if (i < parameters.length - 1) {
+        sql += parameters[i].name +
+            ' ' +
+            'IN' +
+            parameters[i].columnType.name +
+            ',\n';
+      } else {
+        sql += parameters[i].name +
+            ' ' +
+            'IN' +
+            parameters[i].columnType.name +
+            ')\n';
+      }
+    }
+    sql += 'language plpgsql \n';
+    sql += 'as \$\$ \n';
+    sql += 'begin \n';
+    sql += '$body \n';
+
+    sql += 'end;\$\$ \n';
+    print(sql);
+    return query(sql);
   }
 
   @override
