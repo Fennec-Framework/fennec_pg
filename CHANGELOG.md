@@ -1,3 +1,7 @@
+## 0.0.8
+
+- add pool connections.
+
 ## 0.0.7
 
 - fix bugs with updateOneById.

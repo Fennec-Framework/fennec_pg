@@ -7,7 +7,7 @@ import 'repositories/repository.dart';
 void main(List<String> arguments) async {
   var uri = 'postgres://postgres:StartAppPassword@localhost:5432/test_flutter';
 
-  await PGConnectionAdapter.init(uri);
+  await PGConnectionAdapter.initPool(uri);
   UserRepository userRepository = UserRepository();
   TestRepository testRepository = TestRepository();
   /*User user = User();
