@@ -3,6 +3,7 @@ import 'dart:collection';
 
 import 'dart:math';
 
+import 'package:fennec_pg/src/orm/migrations.dart';
 import 'package:fennec_pg/src/prodecure_parameters.dart';
 
 import 'connection.dart';
@@ -66,34 +67,145 @@ class ConnectionDecorator implements Connection, ConnectionOwner {
   }
 
   @override
-  Stream<IRow> createProcedure(
-      {required String procedureName,
-      required List<ProcedureParameters> parameters,
-      required ProcedureParameters out,
-      required String body}) {
-    String sql = '';
-    sql += ' create or replace procedure ' + procedureName + '(\n';
-
-    if (parameters.isEmpty) {
-      sql += out.name + ' ' + ' OUT ' + out.columnType.name + ')\n';
-    } else {
-      sql += out.name + ' ' + ' OUT ' + out.columnType.name + ',\n';
-    }
+  Stream<IRow> callFunction(
+      {required String functionName,
+      required List<ProcedureCallParameters> parameters}) {
+    String sql = 'select * from  $functionName(';
     for (int i = 0; i < parameters.length; i++) {
       if (i < parameters.length - 1) {
-        sql += parameters[i].name +
-            ' ' +
-            ' IN ' +
-            parameters[i].columnType.name +
-            ',\n';
+        if (parameters[i].value is List) {
+          List<String> values = [];
+          for (var value in parameters[i].value) {
+            values.add("'$value'");
+          }
+          sql +=
+              '${parameters[i].name} => Array $values::${parameters[i].columnType.name}, ';
+        } else if (parameters[i].value is Map) {
+          int length = parameters[i].value.length;
+          int count = 0;
+          String encodeMap = "'{";
+          for (var element in parameters[i].value.entries) {
+            dynamic value = element.value;
+            if (value is String) {
+              value = '"$value"';
+            }
+            encodeMap += ' "${element.key}": $value';
+            if (count < length - 1) {
+              encodeMap += ',';
+              count++;
+            }
+          }
+          encodeMap += "}'";
+          sql += '${parameters[i].name} => $encodeMap, ';
+        } else {
+          sql +=
+              '${parameters[i].name} => ${parameters[i].value}::${parameters[i].columnType.name}, ';
+        }
       } else {
-        sql += parameters[i].name +
-            ' ' +
-            ' IN ' +
-            parameters[i].columnType.name +
-            ')\n';
+        if (parameters[i].value is List) {
+          List<String> values = [];
+          for (var value in parameters[i].value) {
+            values.add("'$value'");
+          }
+          sql +=
+              '${parameters[i].name} => Array $values::${parameters[i].columnType.name}, ';
+        } else if (parameters[i].value is Map) {
+          int length = parameters[i].value.length;
+          int count = 0;
+          String encodeMap = "'{";
+          for (var element in parameters[i].value.entries) {
+            dynamic value = element.value;
+            if (value is String) {
+              value = '"$value"';
+            }
+            encodeMap += ' "${element.key}": $value';
+            if (count < length - 1) {
+              encodeMap += ',';
+              count++;
+            }
+          }
+          encodeMap += "}'";
+          sql += '${parameters[i].name} => $encodeMap) ';
+        } else {
+          sql +=
+              '${parameters[i].name} => ${parameters[i].value}::${parameters[i].columnType.name}) ';
+        }
       }
     }
+    print(sql);
+
+    return query(sql);
+  }
+
+  @override
+  Stream<IRow> createFunction(
+      {required String functionName,
+      List<ProcedureParameters> parameters = const [],
+      required String returned,
+      required String body}) {
+    String sql = '';
+    sql += 'create or replace function ' + functionName + '(\n';
+
+    for (int i = 0; i < parameters.length; i++) {
+      sql += parameters[i].name +
+          ' ' +
+          '  ' +
+          parameters[i].columnType.name +
+          ',\n';
+    }
+    if (sql.endsWith(',\n')) {
+      int index = sql.lastIndexOf(',\n');
+      sql = sql.substring(0, index);
+      sql += '\n';
+    }
+    sql += ')\n';
+    sql += 'returns $returned ';
+    sql += 'language plpgsql \n';
+    sql += 'as \$\$ \n';
+    sql += 'begin \n';
+    sql += '$body \n';
+    sql += 'end;\$\$ \n';
+    print(sql);
+    return query(sql);
+  }
+
+  @override
+  Stream<IRow> createProcedure(
+      {required String procedureName,
+      List<ProcedureParameters> inParameters = const [],
+      List<ProcedureParameters> outParameters = const [],
+      List<ProcedureParameters> inoutParameters = const [],
+      required String body}) {
+    String sql = '';
+    sql += 'create or replace procedure ' + procedureName + '(\n';
+
+    for (int i = 0; i < inParameters.length; i++) {
+      sql += inParameters[i].name +
+          ' ' +
+          ' IN ' +
+          inParameters[i].columnType.name +
+          ',\n';
+    }
+    for (int i = 0; i < inoutParameters.length; i++) {
+      sql += inoutParameters[i].name +
+          ' ' +
+          ' INOUT ' +
+          inoutParameters[i].columnType.name +
+          ',\n';
+    }
+    for (int i = 0; i < outParameters.length; i++) {
+      sql += outParameters[i].name +
+          ' ' +
+          ' OUT ' +
+          outParameters[i].columnType.name +
+          ',\n';
+    }
+    if (sql.endsWith(',\n')) {
+      int index = sql.lastIndexOf(',\n');
+      sql = sql.substring(0, index);
+      sql += '\n';
+    }
+    sql += ')\n';
     sql += 'language plpgsql \n';
     sql += 'as \$\$ \n';
     sql += 'begin \n';
@@ -111,14 +223,66 @@ class ConnectionDecorator implements Connection, ConnectionOwner {
     String sql = 'call $procedureName(';
     for (int i = 0; i < parameters.length; i++) {
       if (i < parameters.length - 1) {
-        sql +=
-            '${parameters[i].name} => ${parameters[i].value}::${parameters[i].columnType.name}, ';
+        if (parameters[i].value is List) {
+          List<String> values = [];
+          for (var value in parameters[i].value) {
+            values.add("'$value'");
+          }
+          sql +=
+              '${parameters[i].name} => Array $values::${parameters[i].columnType.name}, ';
+        } else if (parameters[i].value is Map) {
+          int length = parameters[i].value.length;
+          int count = 0;
+          String encodeMap = "'{";
+          for (var element in parameters[i].value.entries) {
+            dynamic value = element.value;
+            if (value is String) {
+              value = '"$value"';
+            }
+            encodeMap += ' "${element.key}": $value';
+            if (count < length - 1) {
+              encodeMap += ',';
+              count++;
+            }
+          }
+          encodeMap += "}'";
+          sql += '${parameters[i].name} => $encodeMap, ';
+        } else {
+          sql +=
+              '${parameters[i].name} => ${parameters[i].value}::${parameters[i].columnType.name}, ';
+        }
       } else {
-        sql +=
-            '${parameters[i].name} => ${parameters[i].value}::${parameters[i].columnType.name}) ';
+        if (parameters[i].value is List) {
+          List<String> values = [];
+          for (var value in parameters[i].value) {
+            values.add("'$value'");
+          }
+          sql +=
+              '${parameters[i].name} => Array $values::${parameters[i].columnType.name}, ';
+        } else if (parameters[i].value is Map) {
+          int length = parameters[i].value.length;
+          int count = 0;
+          String encodeMap = "'{";
+          for (var element in parameters[i].value.entries) {
+            dynamic value = element.value;
+            if (value is String) {
+              value = '"$value"';
+            }
+            encodeMap += ' "${element.key}": $value';
+            if (count < length - 1) {
+              encodeMap += ',';
+              count++;
+            }
+          }
+          encodeMap += "}'";
+          sql += '${parameters[i].name} => $encodeMap) ';
+        } else {
+          sql +=
+              '${parameters[i].name} => ${parameters[i].value}::${parameters[i].columnType.name}) ';
+        }
       }
     }
-    print(sql);
+
     return query(sql);
   }
 

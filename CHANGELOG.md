@@ -1,3 +1,7 @@
+## 1.0.0
+
+- implement stored functions & stored functions and procedures support also List and Map
+
 ## 0.0.9
 
 - implement store procedure feauture.

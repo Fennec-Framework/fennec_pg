@@ -19,7 +19,8 @@ class ColumnType {
   final String name;
 
   const ColumnType(this.name);
-
+  static const ColumnType arrayInt = ColumnType('int[]');
+  static const ColumnType arrayString = ColumnType('varchar[]');
   static const ColumnType boolean = ColumnType('boolean');
 
   static const ColumnType smallSerial = ColumnType('smallserial');

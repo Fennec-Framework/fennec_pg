@@ -21,11 +21,20 @@ abstract class Connection {
   Stream<IRow> query(String sql, [values]);
   Stream<IRow> createProcedure(
       {required String procedureName,
-      required List<ProcedureParameters> parameters,
-      required ProcedureParameters out,
+      List<ProcedureParameters> inParameters = const [],
+      List<ProcedureParameters> outParameters = const [],
+      List<ProcedureParameters> inoutParameters = const [],
       required String body});
   Stream<IRow> callProcedure(
       {required String procedureName,
+      required List<ProcedureCallParameters> parameters});
+  Stream<IRow> createFunction(
+      {required String functionName,
+      List<ProcedureParameters> parameters = const [],
+      required String returned,
+      required String body});
+  Stream<IRow> callFunction(
+      {required String functionName,
       required List<ProcedureCallParameters> parameters});
   Future<int> execute(String sql, [values]);
   Future<T> runInTransaction<T>(Future<T> Function() operation,

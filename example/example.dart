@@ -11,18 +11,19 @@ void main(List<String> arguments) async {
   await PGConnectionAdapter.initPool(uri);
   UserRepository userRepository = UserRepository();
   TestRepository testRepository = TestRepository();
-  PGConnectionAdapter.connection.createProcedure(
-      procedureName: 'test',
+  PGConnectionAdapter.connection.createFunction(
+      functionName: 'test3',
       parameters: [
-        ProcedureParameters(name: 'a', columnType: ColumnType.smallInt)
+        ProcedureParameters(name: 'a', columnType: ColumnType.json),
+        ProcedureParameters(name: 'b', columnType: ColumnType.smallInt)
       ],
-      out: ProcedureParameters(name: 'b', columnType: ColumnType.smallInt),
-      body: 'select (*) from users into b;');
+      body: 'return query( select * from users);',
+      returned: 'setof users');
 
   final v = PGConnectionAdapter.connection
-      .callProcedure(procedureName: 'test', parameters: [
+      .callFunction(functionName: 'test3', parameters: [
     ProcedureCallParameters(
-        name: 'a', value: 1002, columnType: ColumnType.smallInt),
+        name: 'a', value: {'aa': 122}, columnType: ColumnType.json),
     ProcedureCallParameters(
         name: 'b', value: 1002, columnType: ColumnType.smallInt)
   ]);
