@@ -1,5 +1,5 @@
 import 'package:fennec_pg/fennec_pg.dart';
-import 'package:fennec_pg/src/orm/filter/field.dart';
+
 import 'package:fennec_pg/src/prodecure_parameters.dart';
 
 import 'models/user.dart';
@@ -9,7 +9,7 @@ void main(List<String> arguments) async {
   var uri = 'postgres://postgres:StartAppPassword@localhost:5432/test_flutter';
 
   await PGConnectionAdapter.initPool(uri);
-  UserRepository userRepository = UserRepository();
+
   TestRepository testRepository = TestRepository();
   PGConnectionAdapter.connection.createFunction(
       functionName: 'test3',
@@ -50,7 +50,6 @@ void main(List<String> arguments) async {
   test.x = {'Akran': true, 'Chorfi': 'aaa'};
   test.childs.add(child);
   test.childs.add(Child());
-  final result = await testRepository.insert(test);
 
   final x = await testRepository.findOneById('1659308470161');
 

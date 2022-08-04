@@ -3,7 +3,6 @@ import 'dart:collection';
 
 import 'dart:math';
 
-import 'package:fennec_pg/src/orm/migrations.dart';
 import 'package:fennec_pg/src/prodecure_parameters.dart';
 
 import 'connection.dart';
