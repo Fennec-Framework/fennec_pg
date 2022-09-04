@@ -1,7 +1,7 @@
 import '../../../fennec_pg.dart';
 
 class SelectBuilderWithNestedJsonOutput extends SelectBuilder {
-  final List<JoinOutput> joinPutputs = [];
+  final List<JoinOutput> joinOutputs = [];
 
   SelectBuilderWithNestedJsonOutput(List<String> columnsToSelect,
       {String? table})
@@ -10,7 +10,7 @@ class SelectBuilderWithNestedJsonOutput extends SelectBuilder {
   void joinOutPut(JoinType joinType, String tableName, String tableAlias,
       FilterBuilder joinCondition, String tableAliasOutput, String groupBy,
       {bool resultAsArray = false}) {
-    joinPutputs.add(JoinOutput(joinType, tableName, tableAlias,
+    joinOutputs.add(JoinOutput(joinType, tableName, tableAlias,
         tableAliasOutput, joinCondition, groupBy,
         resultAsArray: resultAsArray));
   }
@@ -32,10 +32,10 @@ class SelectBuilderWithNestedJsonOutput extends SelectBuilder {
     } else {
       query = 'with cte as ( select ' "$table" + columnsToSelect.join(',');
     }
-    if (joinPutputs.isEmpty) {
+    if (joinOutputs.isEmpty) {
       query += ' from "$table"';
     } else {
-      for (var join in joinPutputs) {
+      for (var join in joinOutputs) {
         if (join.resultAsArray) {
           if (query.contains('from')) {
             List<String> splitedQuery = query.split('from');
@@ -111,7 +111,7 @@ class SelectBuilderWithNestedJsonOutput extends SelectBuilder {
     if (sorts.isNotEmpty) {
       query += ' ORDER BY';
       sorts.forEach((key, value) {
-        query += key + ' ' + value;
+        query += key + ' ' + value.name;
       });
     }
     if (limit != null) {

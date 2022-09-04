@@ -1,3 +1,7 @@
+## 1.0.1
+
+- fix bugs with BelongsTo , add Limit and Offset , OrderBy for findAll
+
 ## 1.0.0
 
 - implement stored functions & stored functions and procedures support also List and Map

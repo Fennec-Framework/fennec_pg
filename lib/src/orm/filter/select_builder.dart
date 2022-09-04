@@ -5,20 +5,23 @@ class Join {
   String tableName;
   String tableAlias;
   FilterBuilder joinCondition;
+
   Join(this.joinType, this.tableName, this.tableAlias, this.joinCondition);
 }
 
 class SelectBuilder {
-  final Map<String, String> sorts = {};
+  final Map<String, OrderBy> sorts = {};
   final List<Join> joins = [];
   List<String> columnsToSelect = [];
   String? table;
   FilterBuilder? condition;
   int? limit;
   int? offset;
+
   SelectBuilder(this.columnsToSelect, {String? table}) {
     table = table;
   }
+
   void setLimit(int limit) {
     this.limit = limit;
   }
@@ -46,7 +49,7 @@ class SelectBuilder {
     condition = cond;
   }
 
-  void orderBy(fieldName, String order) {
+  void orderBy(fieldName, OrderBy order) {
     sorts[fieldName] = order;
   }
 
@@ -81,7 +84,7 @@ class SelectBuilder {
     if (sorts.isNotEmpty) {
       query += ' ORDER BY';
       sorts.forEach((key, value) {
-        query += key + ' ' + value;
+        query += key + ' ' + value.name;
       });
     }
     if (limit != null) {

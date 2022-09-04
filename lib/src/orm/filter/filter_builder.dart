@@ -8,6 +8,8 @@ class ConditionLogic {
   static const String iN = 'IN';
 }
 
+enum OrderBy { ASC, DESC }
+
 class FilterBuilder {
   Field firstVar;
   Field secondVar;
@@ -18,6 +20,7 @@ class FilterBuilder {
   FilterBuilder(this.firstVar, this.condition, this.secondVar, [this.logic]) {
     conditionQueue.add(this);
   }
+
   String makeFilterQuery() {
     String query = '';
     for (var cond in conditionQueue) {

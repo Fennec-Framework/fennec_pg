@@ -10,12 +10,19 @@ class User extends Serializable {
   late String email;
   @Column(isNullable: false, indexType: IndexType.unique)
   late String password;
+  @HasMany(localKey: 'ac1', foreignKey: 'id', fetchType: FetchType.include)
+  List<Account> account1 = [];
+  @HasMany(localKey: 'ac2', foreignKey: 'id', fetchType: FetchType.include)
+  List<Account> account2 = [];
 
   User();
+
   User.fromJson(Map<String, dynamic> map) {
+    print(map);
     id = map['id'];
     userName = map['user_name'];
     email = map['email'];
+    password = map['password'];
   }
 }
 
@@ -28,7 +35,9 @@ class Test extends Serializable {
   @HasMany(
       fetchType: FetchType.include, localKey: 'test_id', foreignKey: 'test')
   List<Child> childs = [];
+
   Test(this.test);
+
   Test.fromJson(Map<String, dynamic> map) {
     test = map['test'];
     x = map['x'];
@@ -43,7 +52,9 @@ class Test extends Serializable {
 class Child extends Serializable {
   @PrimaryKey(autoIncrement: true)
   late int? id;
+
   Child();
+
   Child.fromJson(Map<String, dynamic> map) {
     id = map['id'];
   }
@@ -52,16 +63,19 @@ class Child extends Serializable {
 @Table('accounts')
 class Account extends Serializable {
   Account();
+
   @PrimaryKey(autoIncrement: true, columnType: ColumnType.bigInt)
   int? id;
-  @BelongsTo(
-      localKey: 'id', foreignKey: 'user_id', fetchType: FetchType.include)
-  User? user;
+  @BelongsTo(localKey: 'id', foreignKey: 'ac1', fetchType: FetchType.include)
+  User? user1;
+  @BelongsTo(localKey: 'id', foreignKey: 'ac2', fetchType: FetchType.include)
+  User? user2;
 
   Account.fromJson(Map<String, dynamic> map) {
+    print(map);
     id = map['id'];
-    if (map['user'] != null) {
-      user = User.fromJson(map['user']);
+    if (map[' user1'] != null) {
+      user1 = User.fromJson(map[' user1']);
     }
   }
 }

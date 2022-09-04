@@ -1,6 +1,6 @@
 name: fennec_pg
 description: this plugin belongs to Fennec Framework. it's a performant Postgresql Driver included ORM.
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/Fennec-Framework/fennec_pg
 
 environment:

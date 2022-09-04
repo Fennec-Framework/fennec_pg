@@ -6,12 +6,12 @@ import 'models/user.dart';
 import 'repositories/repository.dart';
 
 void main(List<String> arguments) async {
-  var uri = 'postgres://postgres:StartAppPassword@localhost:5432/test_flutter';
+  var uri = 'postgres://postgres:StartAppPassword@localhost:5432/test-db';
 
   await PGConnectionAdapter.initPool(uri);
 
   TestRepository testRepository = TestRepository();
-  PGConnectionAdapter.connection.createFunction(
+  /* PGConnectionAdapter.connection.createFunction(
       functionName: 'test3',
       parameters: [
         ProcedureParameters(name: 'a', columnType: ColumnType.json),
@@ -58,7 +58,7 @@ void main(List<String> arguments) async {
 
     final y = await testRepository.updateOneById(x.test, x);
     print(y!.toJson());
-  }
+  }*/
 
   /* AccountRepository accountRepository = AccountRepository();
   UserRepository userRepository = UserRepository();
@@ -74,4 +74,28 @@ void main(List<String> arguments) async {
   for (var row in result) {
     print(row.toJson());
   }*/
+  UserRepository userRepository = UserRepository();
+  User user2 = User();
+  user2.id = 4;
+  user2.password = '111';
+  user2.email = '1234';
+  user2.userName = '123456';
+  User user1 = User();
+  user1.id = 1;
+  user1.password = '11';
+  user1.email = '123';
+  user1.userName = '12345';
+  //print(await userRepository.insert(user));
+  AccountRepository accountRepository = AccountRepository();
+  Account account = Account();
+  account.user1 = user1;
+  account.user2 = user2;
+  //print(await accountRepository.insert(account));
+  final x = await accountRepository.findOneById(3);
+  print(x!.toJson());
+  final result = await accountRepository
+      .findAll(limit: 10, offset: 0, sorts: {'id': OrderBy.ASC});
+  for (var row in result) {
+    print(row.toJson());
+  }
 }

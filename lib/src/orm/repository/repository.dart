@@ -31,7 +31,11 @@ abstract class Repository<T, S> implements IRepository<T, S> {
   }
 
   @override
-  Future<List<T>> findAll({FilterBuilder? filterBuilder}) async {
+  Future<List<T>> findAll(
+      {FilterBuilder? filterBuilder,
+      int? offset,
+      int? limit,
+      Map<String, OrderBy> sorts = const {}}) async {
     ClassMirror cm = reflectClass(T);
     String tablename = RepositoryUtils.getTableName(cm);
     String join = 'with cte as ( select ' "$tablename" '.*';
@@ -87,17 +91,25 @@ abstract class Repository<T, S> implements IRepository<T, S> {
             if (loadType == FetchType.include) {
               String randomName = '"${RepositoryUtils.getRandString(5)}"';
               if (join.contains('JOIN') && join.contains('from')) {
+                int index = join.lastIndexOf("GROUP");
+                if (index > 0) {
+                  join = join.substring(0, index);
+                }
+
                 List<String> splitBefore = join.split('from');
+
                 String temp = splitBefore.first +
                     ', array_remove(array_agg($randomName),NULL) as "$columnName"';
+
                 temp +=
-                    ' from ${splitBefore[1]} ${joinType.name.toUpperCase()} JOIN'
+                    ' from ${splitBefore[1]} ${joinType.name.toUpperCase()} JOIN '
                     '"$joinTableName" $randomName'
-                    ' on $tablename."$foreignKey" = $randomName."$localKey" GROUP BY $tablename."$foreignKey" , ${splitBefore.first.split(',').sublist(1).join(',').split('as').first}';
+                    ' on $tablename."$foreignKey" = $randomName."$localKey" GROUP BY $tablename."$foreignKey"';
+
                 join = temp;
               } else {
                 join +=
-                    ',  array_remove(array_agg($randomName),NULL) as "$columnName" from "$tablename" $tablename ${joinType.name.toUpperCase()} JOIN "$joinTableName" $randomName on $tablename."$foreignKey" = $randomName."$localKey" GROUP BY $tablename."$foreignKey"';
+                    ',  array_remove(array_agg($randomName),NULL) as "$columnName" from "$tablename" $tablename ${joinType.name.toUpperCase()}  JOIN "$joinTableName" $randomName on $tablename."$foreignKey" = $randomName."$localKey" GROUP BY $tablename."$foreignKey"';
               }
             }
           } else if (element.reflectee is BelongsTo) {
@@ -122,7 +134,7 @@ abstract class Repository<T, S> implements IRepository<T, S> {
               if (join.contains('JOIN') && join.contains('from')) {
                 List<String> splitBefore = join.split('from');
                 String temp =
-                    splitBefore.first + ', $tablename as "$columnName"';
+                    splitBefore.first + ', $randomName as "$columnName"';
                 temp +=
                     ' from ${splitBefore[1]} ${joinType.name.toUpperCase()} JOIN'
                     '"$joinTableName" $randomName'
@@ -143,6 +155,19 @@ abstract class Repository<T, S> implements IRepository<T, S> {
     if (filterBuilder != null) {
       join += ' where ' + filterBuilder.makeFilterQuery();
     }
+    if (sorts.isNotEmpty) {
+      join += ' ORDER BY ';
+      sorts.forEach((key, value) {
+        join += key + ' ' + value.name;
+      });
+    }
+    if (limit != null) {
+      join += ' limit $limit';
+    }
+    if (offset != null) {
+      join += ' offset $offset';
+    }
+
     join += ')select row_to_json(c) from cte c;';
 
     var data = await PGConnectionAdapter.connection.query(join).toList();
@@ -213,13 +238,17 @@ abstract class Repository<T, S> implements IRepository<T, S> {
             if (loadType == FetchType.include) {
               String randomName = '"${RepositoryUtils.getRandString(5)}"';
               if (join.contains('JOIN') && join.contains('from')) {
+                int index = join.lastIndexOf("GROUP");
+                if (index > 0) {
+                  join = join.substring(0, index);
+                }
                 List<String> splitBefore = join.split('from');
                 String temp = splitBefore.first +
                     ', array_remove(array_agg($randomName),NULL) as "$columnName"';
                 temp +=
                     ' from ${splitBefore[1]} ${joinType.name.toUpperCase()} JOIN'
                     '"$joinTableName" $randomName'
-                    ' on $tablename."$foreignKey" = $randomName."$localKey" GROUP BY $tablename."$foreignKey" , ${splitBefore.first.split(',').sublist(1).join(',').split('as').first}';
+                    ' on $tablename."$foreignKey" = $randomName."$localKey" GROUP BY $tablename."$foreignKey"';
                 join = temp;
               } else {
                 join +=
@@ -331,7 +360,7 @@ abstract class Repository<T, S> implements IRepository<T, S> {
     String parentPrimaryKey = '';
     dynamic parentId;
     Map<String, dynamic> parentMap = {};
-    Map<String, dynamic> map = res.invoke(#serializeModel, []).reflectee;
+    Map<String, dynamic> map = res.invoke(#toJson, []).reflectee;
 
     List<Map<String, dynamic>> children = [];
     var decls = cm.declarations.values.whereType<VariableMirror>();
@@ -347,14 +376,13 @@ abstract class Repository<T, S> implements IRepository<T, S> {
                   RepositoryUtils.getPrimaryKey(instanceMirror.type)
                       .replaceAll('"', '');
               Map<String, dynamic> tempMap =
-                  instanceMirror.invoke(#serializeModel, []).reflectee;
+                  instanceMirror.invoke(#toJson, []).reflectee;
               String foreignKey =
                   meta.getField(#foreignKey).reflectee ?? "{$tablename}_id";
               parentId = tempMap[parentPrimaryKey];
-
-              if (map.containsValue(instanceMirror.reflectee)) {
+              if (map.containsKey(MirrorSystem.getName(dm.simpleName))) {
                 map.removeWhere(
-                    (key, value) => value == instanceMirror.reflectee);
+                    (key, value) => key == MirrorSystem.getName(dm.simpleName));
                 map.addAll({foreignKey: parentId});
                 parentMap.addAll({
                   MirrorSystem.getName(dm.simpleName):
@@ -366,7 +394,7 @@ abstract class Repository<T, S> implements IRepository<T, S> {
             InstanceMirror instanceMirror = res.getField(dm.simpleName);
             if (instanceMirror.reflectee != null) {
               Map<String, dynamic> tempMap =
-                  instanceMirror.invoke(#serializeModel, []).reflectee;
+                  instanceMirror.invoke(#toJson, []).reflectee;
               children.add(
                   {RepositoryUtils.getTableName(instanceMirror.type): tempMap});
               if (map.containsValue(instanceMirror.reflectee)) {
@@ -382,7 +410,7 @@ abstract class Repository<T, S> implements IRepository<T, S> {
                 InstanceMirror instanceMirror = reflect(item);
 
                 Map<String, dynamic> tempMap =
-                    instanceMirror.invoke(#serializeModel, []).reflectee;
+                    instanceMirror.invoke(#toJson, []).reflectee;
                 children.add({
                   RepositoryUtils.getTableName(instanceMirror.type): tempMap
                 });
@@ -396,6 +424,7 @@ abstract class Repository<T, S> implements IRepository<T, S> {
         }
       }
     }
+    map.removeWhere((key, value) => value == null);
     List<String> keys = map.keys.toList();
     map.forEach((key, value) {
       if (value == null) keys.remove(key);
@@ -489,6 +518,7 @@ abstract class Repository<T, S> implements IRepository<T, S> {
                   }
                   sqlQuery =
                       'INSERT INTO "$tablename"(${keys.join(",")}) VALUES (${values.join(",")}) RETURNING *';
+
                   var rowResult = await PGConnectionAdapter.connection
                       .query(sqlQuery)
                       .toList();
@@ -689,8 +719,7 @@ abstract class Repository<T, S> implements IRepository<T, S> {
     String tablename = RepositoryUtils.getTableName(cm);
     String primaryKey = RepositoryUtils.getPrimaryKey(cm);
     InstanceMirror instanceMirror = reflect(object);
-    Map<String, dynamic> map =
-        instanceMirror.invoke(#serializeModel, []).reflectee;
+    Map<String, dynamic> map = instanceMirror.invoke(#toJson, []).reflectee;
     List<String> query = [];
     map.forEach((key, value) {
       if (value != null) {
@@ -736,7 +765,7 @@ abstract class Repository<T, S> implements IRepository<T, S> {
     }
     String temp =
         'UPDATE "$tablename" SET ${query.join(',')} WHERE $primaryKey = $primaryKeyValue';
-    print(temp);
+
     if (returning) {
       temp += 'RETURNING *';
     }

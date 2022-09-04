@@ -1,6 +1,6 @@
-import 'package:fennec_pg/src/orm/filter/filter_builder.dart';
-import 'package:fennec_pg/src/orm/filter/select_builder.dart';
-import 'package:fennec_pg/src/orm/relations.dart';
+
+
+import '../../../fennec_pg.dart';
 
 class JoinOutput extends Join {
   final String tableAliasOutPut;
