@@ -9,79 +9,43 @@ abstract class Serializable {
     ClassMirror cm = im.type;
     var decls = cm.declarations.values.whereType<VariableMirror>();
     for (var dm in decls) {
-      if (dm.metadata.isNotEmpty) {
-        for (var meta in dm.metadata) {
-          if (meta.reflectee is Column && meta.reflectee is! PrimaryKey) {
-            InstanceMirror cm = reflect(meta.reflectee);
-            String? alias = cm.getField(#alias).reflectee;
-            Type? serializableTo = cm.getField(#serializableTo).reflectee;
-            Type type = serializableTo ?? dm.type.reflectedType;
-            var key = alias ?? MirrorSystem.getName(dm.simpleName);
+      for (var meta in dm.metadata) {
+        if (meta.reflectee is Column && meta.reflectee is! PrimaryKey) {
+          InstanceMirror cm = reflect(meta.reflectee);
+          String? alias = cm.getField(#alias).reflectee;
+          Type? serializableTo = cm.getField(#serializableTo).reflectee;
+          Type type = serializableTo ?? dm.type.reflectedType;
+          var key = alias ?? MirrorSystem.getName(dm.simpleName);
 
-            if (im.getField(dm.simpleName).reflectee != null) {
-              if (type == int) {
-                var val =
-                    int.parse(im.getField(dm.simpleName).reflectee.toString());
-                map[key] = val;
-              } else if (type == double) {
-                var val = double.parse(
-                    im.getField(dm.simpleName).reflectee.toString());
-                map[key] = val;
-              } else if (type == num) {
-                var val =
-                    num.parse(im.getField(dm.simpleName).reflectee.toString());
-                map[key] = val;
-              } else if (type == bool) {
-                var val = im.getField(dm.simpleName).reflectee as bool;
-                map[key] = val;
-              } else if (type == String) {
-                var val = im.getField(dm.simpleName).reflectee.toString();
-                map[key] = val;
-              } else if (type == List) {
-                map[key] = List.from(im.getField(dm.simpleName).reflectee);
-              } else if (type == Map) {
-                map[key] = Map.from(im.getField(dm.simpleName).reflectee);
-              } else {
-                map[key] = im.getField(dm.simpleName).reflectee;
-              }
+          if (im.getField(dm.simpleName).reflectee != null) {
+            if (type == int) {
+              var val =
+                  int.parse(im.getField(dm.simpleName).reflectee.toString());
+              map[key] = val;
+            } else if (type == double) {
+              var val =
+                  double.parse(im.getField(dm.simpleName).reflectee.toString());
+              map[key] = val;
+            } else if (type == num) {
+              var val =
+                  num.parse(im.getField(dm.simpleName).reflectee.toString());
+              map[key] = val;
+            } else if (type == bool) {
+              var val = im.getField(dm.simpleName).reflectee as bool;
+              map[key] = val;
+            } else if (type == String) {
+              var val = im.getField(dm.simpleName).reflectee.toString();
+              map[key] = val;
+            } else if (type == List) {
+              map[key] = List.from(im.getField(dm.simpleName).reflectee);
+            } else if (type == Map) {
+              map[key] = Map.from(im.getField(dm.simpleName).reflectee);
             } else {
               map[key] = im.getField(dm.simpleName).reflectee;
             }
-          } else if (meta.reflectee is PrimaryKey) {
-            var key = MirrorSystem.getName(dm.simpleName);
-            InstanceMirror cm = reflect(meta.reflectee);
-            bool autoIncrement = cm.getField(#autoIncrement).reflectee;
-
-            if (!autoIncrement) {
-              map[key] = im.getField(dm.simpleName).reflectee;
-            }
+          } else {
+            map[key] = im.getField(dm.simpleName).reflectee;
           }
-        }
-      } else {
-        Type type = dm.type.reflectedType;
-        var key = MirrorSystem.getName(dm.simpleName);
-        if (type == int) {
-          var val = int.parse(im.getField(dm.simpleName).reflectee.toString());
-          map[key] = val;
-        } else if (type == double) {
-          var val =
-              double.parse(im.getField(dm.simpleName).reflectee.toString());
-          map[key] = val;
-        } else if (type == num) {
-          var val = num.parse(im.getField(dm.simpleName).reflectee.toString());
-          map[key] = val;
-        } else if (type == bool) {
-          var val = im.getField(dm.simpleName).reflectee as bool;
-          map[key] = val;
-        } else if (type == String) {
-          var val = im.getField(dm.simpleName).reflectee.toString();
-          map[key] = val;
-        } else if (type == List) {
-          map[key] = List.from(im.getField(dm.simpleName).reflectee);
-        } else if (type == Map) {
-          map[key] = Map.from(im.getField(dm.simpleName).reflectee);
-        } else {
-          map[key] = im.getField(dm.simpleName).reflectee;
         }
       }
     }

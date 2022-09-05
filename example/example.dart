@@ -85,17 +85,23 @@ void main(List<String> arguments) async {
   user1.password = '11';
   user1.email = '123';
   user1.userName = '12345';
-  //print(await userRepository.insert(user));
+  User user = User();
+  user.email = '111';
+  user.password = 'awdsd';
+  user.userName = 'aadsD';
+  user.account1 = [Account()];
+  print(await userRepository.insert(user));
   AccountRepository accountRepository = AccountRepository();
   Account account = Account();
   account.user1 = user1;
   account.user2 = user2;
   //print(await accountRepository.insert(account));
   final x = await accountRepository.findOneById(3);
-  print(x!.toJson());
+
   final result = await accountRepository
       .findAll(limit: 10, offset: 0, sorts: {'id': OrderBy.ASC});
   for (var row in result) {
-    print(row.toJson());
+    // await accountRepository.updateOneById(row.id!, row);
   }
+  await accountRepository.updateAll(result);
 }

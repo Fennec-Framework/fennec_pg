@@ -397,9 +397,9 @@ abstract class Repository<T, S> implements IRepository<T, S> {
                   instanceMirror.invoke(#toJson, []).reflectee;
               children.add(
                   {RepositoryUtils.getTableName(instanceMirror.type): tempMap});
-              if (map.containsValue(instanceMirror.reflectee)) {
+              if (map.containsKey(MirrorSystem.getName(dm.simpleName))) {
                 map.removeWhere(
-                    (key, value) => value == instanceMirror.reflectee);
+                    (key, value) => key == MirrorSystem.getName(dm.simpleName));
               }
             }
           } else if (meta.reflectee is HasMany) {
@@ -414,11 +414,11 @@ abstract class Repository<T, S> implements IRepository<T, S> {
                 children.add({
                   RepositoryUtils.getTableName(instanceMirror.type): tempMap
                 });
-                if (map.containsValue(instanceMirror.reflectee)) {
-                  map.removeWhere(
-                      (key, value) => value == instanceMirror.reflectee);
-                }
               }
+            }
+            if (map.containsKey(MirrorSystem.getName(dm.simpleName))) {
+              map.removeWhere(
+                  (key, value) => key == MirrorSystem.getName(dm.simpleName));
             }
           }
         }
@@ -704,10 +704,17 @@ abstract class Repository<T, S> implements IRepository<T, S> {
   }
 
   @override
-  Future<List<T?>> updateAll(List<Map<S, T>> objects) async {
+  Future<List<T?>> updateAll(List<T> objects) async {
     List<T?> result = [];
+    ClassMirror cm = reflectClass(T);
+    String primaryKey = RepositoryUtils.getPrimaryKey(cm).replaceAll("", '');
     for (var map in objects) {
-      result.add(await updateOneById(map.keys.first, map.values.first));
+      InstanceMirror instanceMirror = reflect(map);
+      result.add(await updateOneById(
+          instanceMirror
+              .getField(Symbol(primaryKey.substring(1, primaryKey.length - 1)))
+              .reflectee,
+          map));
     }
     return result;
   }
@@ -719,7 +726,12 @@ abstract class Repository<T, S> implements IRepository<T, S> {
     String tablename = RepositoryUtils.getTableName(cm);
     String primaryKey = RepositoryUtils.getPrimaryKey(cm);
     InstanceMirror instanceMirror = reflect(object);
-    Map<String, dynamic> map = instanceMirror.invoke(#toJson, []).reflectee;
+    Map<String, dynamic> map =
+        instanceMirror.invoke(#serializeModel, []).reflectee;
+    if (map.isEmpty) {
+      return object;
+    }
+
     List<String> query = [];
     map.forEach((key, value) {
       if (value != null) {
@@ -767,8 +779,9 @@ abstract class Repository<T, S> implements IRepository<T, S> {
         'UPDATE "$tablename" SET ${query.join(',')} WHERE $primaryKey = $primaryKeyValue';
 
     if (returning) {
-      temp += 'RETURNING *';
+      temp += ' RETURNING * ';
     }
+    print(temp);
     var data = await PGConnectionAdapter.connection.query(temp).toList();
     List<T> result = <T>[];
     if (data.isNotEmpty) {

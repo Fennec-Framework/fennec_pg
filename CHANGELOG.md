@@ -1,3 +1,6 @@
+## 1.0.2
+
+- fix bugs with UpdateOneById . UpdateAll
 ## 1.0.1
 
 - fix bugs with BelongsTo , add Limit and Offset , OrderBy for findAll

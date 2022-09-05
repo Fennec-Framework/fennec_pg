@@ -18,7 +18,6 @@ class User extends Serializable {
   User();
 
   User.fromJson(Map<String, dynamic> map) {
-    print(map);
     id = map['id'];
     userName = map['user_name'];
     email = map['email'];
@@ -72,10 +71,13 @@ class Account extends Serializable {
   User? user2;
 
   Account.fromJson(Map<String, dynamic> map) {
-    print(map);
     id = map['id'];
-    if (map[' user1'] != null) {
-      user1 = User.fromJson(map[' user1']);
+
+    if (map['user1'] != null) {
+      user1 = User.fromJson(map['user1']);
+    }
+    if (map['user2'] != null) {
+      user2 = User.fromJson(map['user2']);
     }
   }
 }
