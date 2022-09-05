@@ -102,28 +102,26 @@ abstract class Serializable {
             }
           } else if (meta.reflectee is Relationship) {
             InstanceMirror cm = reflect(meta.reflectee);
-            FetchType loadType = cm.getField(#fetchType).reflectee;
-            if (loadType == FetchType.include) {
-              var key = MirrorSystem.getName(dm.simpleName);
 
-              if (im.getField(dm.simpleName).reflectee != null) {
-                if (im.getField(dm.simpleName).reflectee is! Iterable) {
-                  map[key] = im.getField(dm.simpleName).reflectee.toJson();
-                } else if (im.getField(dm.simpleName).reflectee is Set) {
-                  Set set = im.getField(dm.simpleName).reflectee;
-                  Set<Map<String, dynamic>> result = {};
-                  for (var element in set) {
-                    result.add(element.toJson());
-                  }
-                  map[key] = result;
-                } else if (im.getField(dm.simpleName).reflectee is List) {
-                  List list = im.getField(dm.simpleName).reflectee;
-                  List<Map<String, dynamic>> result = [];
-                  for (var element in list) {
-                    result.add(element.toJson());
-                  }
-                  map[key] = result;
+            var key = MirrorSystem.getName(dm.simpleName);
+
+            if (im.getField(dm.simpleName).reflectee != null) {
+              if (im.getField(dm.simpleName).reflectee is! Iterable) {
+                map[key] = im.getField(dm.simpleName).reflectee.toJson();
+              } else if (im.getField(dm.simpleName).reflectee is Set) {
+                Set set = im.getField(dm.simpleName).reflectee;
+                Set<Map<String, dynamic>> result = {};
+                for (var element in set) {
+                  result.add(element.toJson());
                 }
+                map[key] = result;
+              } else if (im.getField(dm.simpleName).reflectee is List) {
+                List list = im.getField(dm.simpleName).reflectee;
+                List<Map<String, dynamic>> result = [];
+                for (var element in list) {
+                  result.add(element.toJson());
+                }
+                map[key] = result;
               }
             }
           } else {

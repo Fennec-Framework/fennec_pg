@@ -1,3 +1,6 @@
+## 1.0.3
+
+- fix bugs with FetchType
 ## 1.0.2
 
 - fix bugs with UpdateOneById . UpdateAll
