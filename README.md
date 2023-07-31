@@ -143,7 +143,7 @@ class AccountRepository extends Repository<Account, int> {}
  
  # LICENSE
 
-[MIT](https://github.com/Fennec-Framework/fennec_pg/blob/master/LICENSE)
+[Apache-2.0](https://github.com/Fennec-Framework/fennec_pg/blob/master/LICENSE)
  
  
  
